@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI Dashboard | โรงพยาบาลแม่แตง</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0b1120;
+  --sidebar: #111827;
+  --sidebar-w: 270px;
+  --card: #1a2235;
+  --card2: #1f2c40;
+  --border: #2a3a52;
+  --text: #e2e8f0;
+  --muted: #8899aa;
+  --accent: #38bdf8;
+  --accent2: #0ea5e9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --purple: #8b5cf6;
+  --teal: #14b8a6;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+/* ====== LOGIN ====== */
+#loginWrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 40%,#0f2744 0%,#0b1120 70%)}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:400px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .hosp-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),var(--teal));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
+.login-logo h1{font-size:20px;font-weight:700;color:var(--text)}
+.login-logo p{font-size:12px;color:var(--muted);margin-top:4px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.form-group input,.form-group select{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'Prompt',sans-serif;font-size:14px;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.btn-login{width:100%;background:linear-gradient(135deg,var(--accent),var(--teal));border:none;border-radius:8px;padding:13px;color:#fff;font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-login:hover{opacity:.9}
+.login-err{color:var(--danger);font-size:13px;text-align:center;margin-top:10px;display:none}
+/* ====== APP LAYOUT ====== */
+#app{display:none;min-height:100vh}
+.app-layout{display:flex;min-height:100vh}
+/* SIDEBAR */
+#sidebar{width:var(--sidebar-w);background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;transition:transform .3s}
+.sidebar-head{padding:20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-logo{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--teal));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sidebar-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}
+.sidebar-title span{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.nav-section{padding:10px 10px 0}
+.nav-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 8px 4px;font-weight:500}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:all .15s;color:var(--muted);margin-bottom:2px}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:rgba(56,189,248,.15);color:var(--accent)}
+.nav-icon{width:18px;text-align:center;flex-shrink:0;font-size:16px}
+.nav-text{font-size:13px;font-weight:500;flex:1}
+.nav-badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 7px;border-radius:10px}
+.nav-sub{padding-left:38px;overflow:hidden;max-height:0;transition:max-height .3s}
+.nav-sub.open{max-height:500px}
+.nav-sub-item{padding:6px 8px;border-radius:6px;cursor:pointer;color:var(--muted);font-size:12px;transition:all .15s;margin-bottom:1px;display:flex;align-items:center;gap:8px}
+.nav-sub-item:hover{background:var(--card);color:var(--text)}
+.nav-sub-item.active{color:var(--accent)}
+.nav-arrow{margin-left:auto;transition:transform .3s;font-size:12px}
+.nav-item.open .nav-arrow{transform:rotate(90deg)}
+/* TOPBAR */
+#topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:56px;background:var(--sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:90;transition:left .3s}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.hamburger{display:none;cursor:pointer;font-size:20px;color:var(--muted)}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:5px 12px}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;font-weight:500}
+.role-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.role-superadmin{background:rgba(139,92,246,.2);color:#a78bfa}
+.role-admin{background:rgba(56,189,248,.2);color:#38bdf8}
+.role-user{background:rgba(20,184,166,.2);color:#2dd4bf}
+.btn-logout{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:'Prompt',sans-serif;font-size:12px;transition:all .2s}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+/* MAIN */
+#mainContent{margin-left:var(--sidebar-w);padding-top:56px;min-height:100vh;transition:margin-left .3s}
+.page{display:none;padding:24px;animation:fadeIn .2s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* CARDS */
+.page-header{margin-bottom:24px}
+.page-header h2{font-size:22px;font-weight:700}
+.page-header p{color:var(--muted);font-size:13px;margin-top:4px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-green::before{background:var(--success)}
+.stat-blue::before{background:var(--accent)}
+.stat-yellow::before{background:var(--warning)}
+.stat-red::before{background:var(--danger)}
+.stat-purple::before{background:var(--purple)}
+.stat-card .label{font-size:12px;color:var(--muted);margin-bottom:8px}
+.stat-card .value{font-size:28px;font-weight:700;line-height:1}
+.stat-card .sub{font-size:12px;color:var(--muted);margin-top:6px}
+.stat-card .icon{position:absolute;top:16px;right:16px;font-size:24px;opacity:.3}
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+/* PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.panel-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer}
+.panel-head-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.panel-head h3{font-size:14px;font-weight:600;flex:1}
+.panel-meta{font-size:11px;color:var(--muted);display:flex;gap:12px;align-items:center}
+.panel-arrow{color:var(--muted);transition:transform .3s}
+.panel.open .panel-arrow{transform:rotate(90deg)}
+.panel-body{display:none;padding:16px}
+.panel.open .panel-body{display:block}
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:var(--card2);padding:10px 12px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid rgba(42,58,82,.5);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+/* STATUS */
+.status{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+.status-pass{background:rgba(16,185,129,.15);color:#34d399}
+.status-fail{background:rgba(239,68,68,.15);color:#f87171}
+.status-na{background:rgba(148,163,184,.1);color:#94a3b8}
+.status-pending{background:rgba(245,158,11,.15);color:#fbbf24}
+/* PROGRESS */
+.prog-bar{height:6px;background:var(--card2);border-radius:3px;overflow:hidden;margin:4px 0}
+.prog-fill{height:100%;border-radius:3px;transition:width .6s}
+/* YEAR TABS */
+.year-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.year-tab{padding:5px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;border:1px solid var(--border);color:var(--muted);transition:all .15s}
+.year-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* PART TABS */
+.part-tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:0}
+.part-tab{padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.part-tab:hover{color:var(--text)}
+.part-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-family:'Prompt',sans-serif;font-size:12px;font-weight:500;transition:all .2s}
+.btn-primary{background:var(--accent2);color:#fff}
+.btn-primary:hover{background:var(--accent)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(239,68,68,.2);color:var(--danger)}
+.btn-success{background:rgba(16,185,129,.2);color:var(--success)}
+/* MODAL */
+#modalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
+#modalOverlay.open{display:flex}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1}
+.modal-body{padding:20px 24px}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+/* FORM */
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* CHART */
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.chart-box h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted)}
+/* ALERT */
+.alert{padding:10px 14px;border-radius:8px;font-size:12.5px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start}
+.alert-info{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);color:#7dd3fc}
+.alert-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:#fcd34d}
+.alert-success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#6ee7b7}
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-head h3{font-size:15px;font-weight:600}
+/* ADMIN */
+.user-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card2);border-radius:10px;margin-bottom:8px;border:1px solid var(--border)}
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--success);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none}
+#toast.show{transform:translateY(0);opacity:1}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+/* SEARCH */
+.search-bar{position:relative;margin-bottom:16px}
+.search-bar input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 14px 9px 36px;color:var(--text);font-family:'Prompt',sans-serif;font-size:13px;outline:none}
+.search-bar input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px}
+/* OVERLAY backdrop for mobile */
+#sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99}
+/* === RESPONSIVE === */
+@media(max-width:900px){
+  :root{--sidebar-w:0px}
+  #sidebar{transform:translateX(-270px);width:270px}
+  #sidebar.open{transform:translateX(0);--sidebar-w:270px}
+  #topbar{left:0}
+  #mainContent{margin-left:0}
+  .hamburger{display:block}
+  #sidebarOverlay.open{display:block}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr}
+  .page{padding:14px}
+  .row-2{grid-template-columns:1fr}
+  .modal-box{width:100%;max-height:80vh;border-radius:16px 16px 0 0;position:absolute;bottom:0}
+  #modalOverlay.open{align-items:flex-end}
+}
+/* MINI MAP in overview */
+.kpi-overview-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(42,58,82,.5)}
+.kpi-overview-row:last-child{border-bottom:none}
+.kpi-num{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.kpi-overview-name{flex:1;font-size:13px}
+.kpi-overview-target{font-size:11px;color:var(--muted);width:100px;flex-shrink:0}
+.kpi-overview-val{font-size:13px;font-weight:600;width:80px;text-align:right;flex-shrink:0}
+/* LINK badge */
+.link-badge{font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(139,92,246,.2);color:#a78bfa;margin-left:6px}
+.ha-badge{font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(20,184,166,.15);color:var(--teal);margin-left:4px;cursor:pointer}
+</style>
+</head>
+<body>
+<!-- LOGIN -->
+<div id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="hosp-icon">🏥</div>
+      <h1>โรงพยาบาลแม่แตง</h1>
+      <p>KPI Dashboard System</p>
+    </div>
+    <div class="form-group">
+      <label>ชื่อผู้ใช้งาน</label>
+      <input type="text" id="loginUser" placeholder="กรอกชื่อผู้ใช้" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>รหัสผ่าน</label>
+      <input type="password" id="loginPass" placeholder="กรอกรหัสผ่าน" autocomplete="current-password">
+    </div>
+    <button class="btn-login" onclick="doLogin()">🔐 เข้าสู่ระบบ</button>
+    <div class="login-err" id="loginErr">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+    <div style="margin-top:20px;padding:12px;background:rgba(56,189,248,.07);border-radius:8px;font-size:11px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--accent)">บัญชีทดสอบ:</strong><br>
+      superadmin / Admin@1234 (Super Admin)<br>
+      hn.admin / HN@2568 (Admin – HA ทีมนำ)<br>
+      rm.admin / RM@2568 (Admin – RM)<br>
+      strategy.admin / ST@2568 (Admin – ยุทธศาสตร์)<br>
+      viewer / View@123 (User – ดูอย่างเดียว)
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <nav id="sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-logo">🏥</div>
+        <div class="sidebar-title">รพ.แม่แตง <span>KPI Dashboard</span></div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">หลัก</div>
+        <div class="nav-item active" onclick="showPage('overview')" data-page="overview">
+          <span class="nav-icon">📊</span><span class="nav-text">ภาพรวม Dashboard</span>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">KPI ยุทธศาสตร์</div>
+        <div class="nav-item" id="navStrategic" onclick="toggleNav('navStrategic','subStrategic')" data-group="strategic">
+          <span class="nav-icon">🎯</span><span class="nav-text">KPI ยุทธศาสตร์</span>
+          <span class="nav-badge" id="stratBadge">36</span>
+          <span class="nav-arrow">›</span>
+        </div>
+        <div class="nav-sub" id="subStrategic">
+          <div class="nav-sub-item" onclick="showPage('strategic-all')" data-page="strategic-all">📋 ตัวชี้วัดทั้งหมด</div>
+          <div class="nav-sub-item" onclick="showPage('strategic-d1')" data-page="strategic-d1">1. ด้านบริการสุขภาพ</div>
+          <div class="nav-sub-item" onclick="showPage('strategic-d2')" data-page="strategic-d2">2. ด้านคุณภาพมาตรฐาน</div>
+          <div class="nav-sub-item" onclick="showPage('strategic-d3')" data-page="strategic-d3">3. ด้านการเงินการคลัง</div>
+          <div class="nav-sub-item" onclick="showPage('strategic-d4')" data-page="strategic-d4">4. ด้านบุคลากร & HR</div>
+          <div class="nav-sub-item" onclick="showPage('strategic-d5')" data-page="strategic-d5">5. ด้านสิ่งแวดล้อม</div>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">KPI HA (สรพ.)</div>
+        <div class="nav-item" id="navHA" onclick="toggleNav('navHA','subHA')" data-group="ha">
+          <span class="nav-icon">🏆</span><span class="nav-text">KPI HA</span>
+          <span class="nav-arrow">›</span>
+        </div>
+        <div class="nav-sub" id="subHA">
+          <div class="nav-sub-item" onclick="showPage('ha-part1')" data-page="ha-part1">📌 Part 1: ทีมนำ</div>
+          <div class="nav-sub-item" onclick="showPage('ha-part2')" data-page="ha-part2">⚙️ Part 2: ระบบงานสำคัญ</div>
+          <div class="nav-sub-item" onclick="showPage('ha-part3')" data-page="ha-part3">🩺 Part 3: PCT / กลุ่มผู้ป่วย</div>
+          <div class="nav-sub-item" onclick="showPage('ha-part4')" data-page="ha-part4">📈 Part 4: ผลลัพธ์</div>
+        </div>
+      </div>
+
+      <div class="nav-section" id="navAdminSection" style="display:none">
+        <div class="nav-label">จัดการระบบ</div>
+        <div class="nav-item" onclick="showPage('admin-users')" data-page="admin-users">
+          <span class="nav-icon">👥</span><span class="nav-text">จัดการผู้ใช้งาน</span>
+        </div>
+        <div class="nav-item" onclick="showPage('admin-settings')" data-page="admin-settings">
+          <span class="nav-icon">⚙️</span><span class="nav-text">ตั้งค่าระบบ</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- TOPBAR -->
+    <div id="topbar">
+      <div class="topbar-left">
+        <span class="hamburger" onclick="toggleSidebar()">☰</span>
+        <span class="topbar-title" id="topbarTitle">ภาพรวม Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="user-avatar" id="userAvatar">SA</div>
+          <div>
+            <div class="user-name" id="userName">Super Admin</div>
+            <div><span class="role-badge" id="roleBadge">Super Admin</span></div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="doLogout()">ออกจากระบบ</button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="mainContent">
+
+      <!-- ====== PAGE: OVERVIEW ====== -->
+      <div class="page active" id="page-overview">
+        <div class="page-header">
+          <h2>📊 ภาพรวม KPI Dashboard</h2>
+          <p>โรงพยาบาลแม่แตง | ปีงบประมาณ <span id="currentYear">2568</span> | อัปเดตล่าสุด: <span id="lastUpdate">-</span></p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card stat-blue">
+            <div class="label">KPI ยุทธศาสตร์ ทั้งหมด</div>
+            <div class="value" id="ov-strat-total">36</div>
+            <div class="sub">12 แผนงาน · 28 โครงการ</div>
+            <div class="icon">🎯</div>
+          </div>
+          <div class="stat-card stat-green">
+            <div class="label">ผ่านเป้าหมาย</div>
+            <div class="value" id="ov-strat-pass" style="color:var(--success)">-</div>
+            <div class="sub">ตัวชี้วัด ยุทธศาสตร์</div>
+            <div class="icon">✅</div>
+          </div>
+          <div class="stat-card stat-red">
+            <div class="label">ไม่ผ่านเป้าหมาย</div>
+            <div class="value" id="ov-strat-fail" style="color:var(--danger)">-</div>
+            <div class="sub">ตัวชี้วัด ยุทธศาสตร์</div>
+            <div class="icon">⚠️</div>
+          </div>
+          <div class="stat-card stat-yellow">
+            <div class="label">ยังไม่บันทึกข้อมูล</div>
+            <div class="value" id="ov-strat-na" style="color:var(--warning)">-</div>
+            <div class="sub">รอบันทึก</div>
+            <div class="icon">📝</div>
+          </div>
+          <div class="stat-card stat-purple">
+            <div class="label">KPI HA ทั้งหมด</div>
+            <div class="value" id="ov-ha-total">-</div>
+            <div class="sub">Part 1 + 2 + 4</div>
+            <div class="icon">🏆</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="chart-box">
+            <h4>📈 ภาพรวมสถานะ KPI ยุทธศาสตร์ ปี 2568</h4>
+            <canvas id="chartOverview" height="200"></canvas>
+          </div>
+          <div class="chart-box">
+            <h4>📊 KPI HA รายงานอุบัติการณ์ (ปี 2564–2568)</h4>
+            <canvas id="chartHA" height="200"></canvas>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel" style="margin:0">
+            <div class="panel-head" style="cursor:default">
+              <div class="panel-head-icon" style="background:rgba(56,189,248,.15);color:var(--accent)">🎯</div>
+              <h3>ตัวชี้วัดยุทธศาสตร์ที่ต้องติดตาม</h3>
+            </div>
+            <div class="panel-body" id="stratWatchList" style="display:block;max-height:300px;overflow-y:auto">
+              <div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">กำลังโหลด...</div>
+            </div>
+          </div>
+          <div class="panel" style="margin:0">
+            <div class="panel-head" style="cursor:default">
+              <div class="panel-head-icon" style="background:rgba(16,185,129,.15);color:var(--success)">🏆</div>
+              <h3>HA KPI ที่ยังไม่บันทึก ปี 2568</h3>
+            </div>
+            <div class="panel-body" id="haWatchList" style="display:block;max-height:300px;overflow-y:auto">
+              <div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">กำลังโหลด...</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /overview -->
+
+      <!-- ====== PAGE: STRATEGIC ALL ====== -->
+      <div class="page" id="page-strategic-all">
+        <div class="page-header">
+          <h2>🎯 KPI ยุทธศาสตร์ รพ.แม่แตง</h2>
+          <p>12 แผนงาน · 28 โครงการ · 36 ตัวชี้วัด</p>
+        </div>
+        <div class="alert alert-info">ℹ️ <span>ตัวชี้วัด KPI ยุทธศาสตร์ที่เชื่อมโยงกับ KPI HA — เมื่อบันทึกใน HA แล้ว ข้อมูลจะอัปเดตมาที่นี่โดยอัตโนมัติ (ทิศทางเดียว HA → ยุทธศาสตร์)</span></div>
+        <div class="year-tabs" id="stratYearTabs"></div>
+        <div class="search-bar"><span class="search-icon">🔍</span><input type="text" placeholder="ค้นหาตัวชี้วัด..." oninput="filterStrategic(this.value)"></div>
+        <div id="strategicAccordion"></div>
+      </div>
+
+      <!-- ====== PAGE: STRATEGIC sub-pages (redirect to strategic-all) ====== -->
+      <div class="page" id="page-strategic-d1"><div style="padding:20px;color:var(--muted)">Loading...</div></div>
+      <div class="page" id="page-strategic-d2"><div style="padding:20px;color:var(--muted)">Loading...</div></div>
+      <div class="page" id="page-strategic-d3"><div style="padding:20px;color:var(--muted)">Loading...</div></div>
+      <div class="page" id="page-strategic-d4"><div style="padding:20px;color:var(--muted)">Loading...</div></div>
+      <div class="page" id="page-strategic-d5"><div style="padding:20px;color:var(--muted)">Loading...</div></div>
+
+      <!-- ====== PAGE: HA PART 1 ====== -->
+      <div class="page" id="page-ha-part1">
+        <div class="page-header">
+          <h2>📌 KPI HA — Part 1: ทีมนำ</h2>
+          <p>ตัวชี้วัดด้านการนำองค์กร กลยุทธ์ ผู้ป่วย การวัด บุคลากร และการปฏิบัติการ</p>
+        </div>
+        <div class="alert alert-warn">⚡ <span>การบันทึก KPI HA ที่เชื่อมโยงกับ KPI ยุทธศาสตร์ ระบบจะ Sync ข้อมูลไปยัง KPI ยุทธศาสตร์โดยอัตโนมัติ</span></div>
+        <div class="part-tabs" id="p1SubTabs"></div>
+        <div class="year-tabs" id="p1YearTabs"></div>
+        <div id="p1Content"></div>
+      </div>
+
+      <!-- ====== PAGE: HA PART 2 ====== -->
+      <div class="page" id="page-ha-part2">
+        <div class="page-header">
+          <h2>⚙️ KPI HA — Part 2: ระบบงานสำคัญ</h2>
+          <p>RM, NSO, MSO, ENV, EQP, IC, IM, PTC, LAB, เฝ้าระวังโรค, ชุมชน</p>
+        </div>
+        <div class="alert alert-warn">⚡ <span>การบันทึก KPI HA ที่เชื่อมโยงกับ KPI ยุทธศาสตร์ ระบบจะ Sync ข้อมูลไปยัง KPI ยุทธศาสตร์โดยอัตโนมัติ</span></div>
+        <div class="part-tabs" id="p2SubTabs"></div>
+        <div class="year-tabs" id="p2YearTabs"></div>
+        <div id="p2Content"></div>
+      </div>
+
+      <!-- ====== PAGE: HA PART 3 ====== -->
+      <div class="page" id="page-ha-part3">
+        <div class="page-header">
+          <h2>🩺 KPI HA — Part 3: PCT / กลุ่มผู้ป่วย</h2>
+          <p>(ยังไม่มีข้อมูล — รอรับข้อมูลจากผู้รับผิดชอบ)</p>
+        </div>
+        <div class="alert alert-info">📌 <span>Part 3 อยู่ระหว่างรวบรวมข้อมูลจากทีม PCT กรุณาส่งข้อมูลให้ Super Admin เพื่อนำเข้าระบบ</span></div>
+        <div class="panel open"><div class="panel-body" style="display:block;text-align:center;padding:40px;color:var(--muted)">🏗️ กำลังเตรียมข้อมูล Part 3</div></div>
+      </div>
+
+      <!-- ====== PAGE: HA PART 4 ====== -->
+      <div class="page" id="page-ha-part4">
+        <div class="page-header">
+          <h2>📈 KPI HA — Part 4: ผลลัพธ์</h2>
+          <p>SAR Part 4 ถึงกันยายน 2568 | ผลลัพธ์ทางคลินิก ความปลอดภัย ประสิทธิภาพ</p>
+        </div>
+        <div class="alert alert-warn">⚡ <span>การบันทึก KPI HA ที่เชื่อมโยงกับ KPI ยุทธศาสตร์ ระบบจะ Sync ข้อมูลไปยัง KPI ยุทธศาสตร์โดยอัตโนมัติ</span></div>
+        <div class="part-tabs" id="p4SubTabs"></div>
+        <div class="year-tabs" id="p4YearTabs"></div>
+        <div id="p4Content"></div>
+      </div>
+
+      <!-- ====== PAGE: ADMIN USERS ====== -->
+      <div class="page" id="page-admin-users">
+        <div class="page-header">
+          <h2>👥 จัดการผู้ใช้งาน</h2>
+          <p>เพิ่ม / แก้ไข / ลบ บัญชีผู้ใช้และสิทธิ์การเข้าถึง</p>
+        </div>
+        <div class="sec-head">
+          <h3>รายการผู้ใช้งาน</h3>
+          <button class="btn btn-primary" onclick="openAddUser()">➕ เพิ่มผู้ใช้</button>
+        </div>
+        <div id="userList"></div>
+      </div>
+
+      <!-- ====== PAGE: ADMIN SETTINGS ====== -->
+      <div class="page" id="page-admin-settings">
+        <div class="page-header">
+          <h2>⚙️ ตั้งค่าระบบ</h2>
+        </div>
+        <div class="panel open">
+          <div class="panel-body" style="display:block">
+            <div class="form-group">
+              <label>ปีงบประมาณปัจจุบัน</label>
+              <select id="settingYear" onchange="saveSetting('activeYear',this.value)">
+                <option value="2565">2565</option>
+                <option value="2566">2566</option>
+                <option value="2567">2567</option>
+                <option value="2568" selected>2568</option>
+                <option value="2569">2569</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>ชื่อโรงพยาบาล</label>
+              <input type="text" value="โรงพยาบาลแม่แตง" readonly>
+            </div>
+            <button class="btn btn-success" onclick="showToast('บันทึกการตั้งค่าเรียบร้อย ✅')">💾 บันทึก</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /mainContent -->
+  </div>
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div id="modalOverlay">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-head">
+      <h3 id="modalTitle">บันทึก / แก้ไขข้อมูล</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot">
+      <button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-primary" id="modalSaveBtn" onclick="saveModalData()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// DATA STORE (localStorage)
+// ============================================================
+const STORE_KEY = 'maetaeng_kpi_v2';
+
+function getData() {
+  const raw = localStorage.getItem(STORE_KEY);
+  return raw ? JSON.parse(raw) : initData();
+}
+function saveData(d) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(d));
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleString('th-TH');
+}
+
+// ============================================================
+// USERS
+// ============================================================
+const DEFAULT_USERS = [
+  { id:'u1', username:'superadmin', password:'Admin@1234', name:'Super Administrator', role:'superadmin', dept:'IT', canEdit:[] },
+  { id:'u2', username:'hn.admin',   password:'HN@2568',   name:'เจ้าหน้าที่ HA ทีมนำ', role:'admin', dept:'HA-P1', canEdit:['ha-part1'] },
+  { id:'u3', username:'rm.admin',   password:'RM@2568',   name:'เจ้าหน้าที่ RM',     role:'admin', dept:'HA-P2-RM', canEdit:['ha-part2-rm'] },
+  { id:'u4', username:'strategy.admin', password:'ST@2568', name:'เจ้าหน้าที่ยุทธศาสตร์', role:'admin', dept:'Strategic', canEdit:['strategic'] },
+  { id:'u5', username:'viewer',     password:'View@123',  name:'ผู้สังเกตการณ์',    role:'user',  dept:'-', canEdit:[] },
+];
+
+function initData() {
+  const d = {
+    users: DEFAULT_USERS,
+    settings: { activeYear: '2568' },
+    strategicKPI: getDefaultStrategicKPI(),
+    haKPI: getDefaultHaKPI(),
+    lastUpdate: new Date().toISOString()
+  };
+  saveData(d);
+  return d;
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+let currentUser = null;
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const d = getData();
+  const user = d.users.find(x => x.username===u && x.password===p);
+  if (!user) {
+    document.getElementById('loginErr').style.display='block';
+    return;
+  }
+  currentUser = user;
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+function doLogout() {
+  currentUser = null;
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginErr').style.display='none';
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function canEdit(section) {
+  if (!currentUser) return false;
+  if (currentUser.role === 'superadmin') return true;
+  if (currentUser.role === 'admin') return currentUser.canEdit.includes(section);
+  return false;
+}
+
+// ============================================================
+// APP INIT
+// ============================================================
+function initApp() {
+  const u = currentUser;
+  document.getElementById('userName').textContent = u.name;
+  document.getElementById('userAvatar').textContent = u.name.slice(0,2);
+  const rb = document.getElementById('roleBadge');
+  rb.textContent = u.role==='superadmin'?'Super Admin': u.role==='admin'?'Admin':'User';
+  rb.className = 'role-badge role-'+u.role;
+  if (u.role==='superadmin') document.getElementById('navAdminSection').style.display='block';
+  initYearTabs();
+  renderOverview();
+  renderStrategicPage();
+  renderHA_P1();
+  renderHA_P2();
+  renderHA_P4();
+  renderAdminUsers();
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const PAGE_TITLES = {
+  'overview':'ภาพรวม Dashboard',
+  'strategic-all':'KPI ยุทธศาสตร์ – ทั้งหมด',
+  'strategic-d1':'KPI ยุทธศาสตร์ – ด้านบริการ',
+  'strategic-d2':'KPI ยุทธศาสตร์ – ด้านคุณภาพ',
+  'strategic-d3':'KPI ยุทธศาสตร์ – ด้านการเงิน',
+  'strategic-d4':'KPI ยุทธศาสตร์ – ด้านบุคลากร',
+  'strategic-d5':'KPI ยุทธศาสตร์ – ด้านสิ่งแวดล้อม',
+  'ha-part1':'KPI HA – Part 1 ทีมนำ',
+  'ha-part2':'KPI HA – Part 2 ระบบงานสำคัญ',
+  'ha-part3':'KPI HA – Part 3 PCT',
+  'ha-part4':'KPI HA – Part 4 ผลลัพธ์',
+  'admin-users':'จัดการผู้ใช้งาน',
+  'admin-settings':'ตั้งค่าระบบ',
+};
+
+function showPage(pid) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .nav-sub-item').forEach(n=>n.classList.remove('active'));
+  const pg = document.getElementById('page-'+pid);
+  if (pg) pg.classList.add('active');
+  const navEl = document.querySelector(`[data-page="${pid}"]`);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('topbarTitle').textContent = PAGE_TITLES[pid]||pid;
+  if (pid.startsWith('strategic-d')) {
+    filterStrategicByGroup(pid.replace('strategic-d',''));
+    document.getElementById('page-'+pid).innerHTML = document.getElementById('page-strategic-all').innerHTML;
+    document.querySelector('#page-'+pid+' #strategicAccordion') && renderStrategicPage(pid.replace('strategic-d',''));
+  }
+  closeSidebar();
+}
+
+function toggleNav(itemId, subId) {
+  const item = document.getElementById(itemId);
+  const sub = document.getElementById(subId);
+  item.classList.toggle('open');
+  sub.classList.toggle('open');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ============================================================
+// YEARS
+// ============================================================
+const YEARS = ['2565','2566','2567','2568','2569'];
+let activeYear = '2568';
+
+function initYearTabs() {
+  ['stratYearTabs','p1YearTabs','p2YearTabs','p4YearTabs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = YEARS.map(y=>`<div class="year-tab${y===activeYear?' active':''}" onclick="setYear('${y}','${id}')">${y}</div>`).join('');
+  });
+}
+function setYear(y, tabsId) {
+  activeYear = y;
+  document.querySelectorAll('.year-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll(`#${tabsId} .year-tab`).forEach(t=>{ if(t.textContent===y) t.classList.add('active'); });
+  renderStrategicPage();
+  renderHA_P1();
+  renderHA_P2();
+  renderHA_P4();
+  renderOverview();
+}
+
+// ============================================================
+// STRATEGIC KPI DATA (12 Plans, 28 Projects, 36 Indicators)
+// ============================================================
+function getDefaultStrategicKPI() {
+  return {
+    plans: [
+/* === แผนงานที่ 1 === */
+{id:'p01',name:'แผนงานที่ 1 การพัฒนาระบบบริการสุขภาพและการเข้าถึงบริการ',color:'#38bdf8',icon:'🏥',
+ projects:[
+  {id:'pr01',name:'โครงการที่ 1 พัฒนาระบบบริการผู้ป่วยนอกและผู้ป่วยใน',indicators:[
+    {id:'i001',no:'1.1.1',name:'อัตราความพึงพอใจของผู้รับบริการผู้ป่วยนอก',target:'>ร้อยละ 80',unit:'ร้อยละ',haLink:null,values:{'2565':'82.5','2566':'84.1','2567':'85.0','2568':'','2569':''}},
+    {id:'i002',no:'1.1.2',name:'อัตราความพึงพอใจของผู้รับบริการผู้ป่วยใน',target:'>ร้อยละ 80',unit:'ร้อยละ',haLink:null,values:{'2565':'83.2','2566':'85.5','2567':'86.2','2568':'','2569':''}},
+  ]},
+  {id:'pr02',name:'โครงการที่ 2 พัฒนาระบบส่งต่อและเครือข่ายบริการ',indicators:[
+    {id:'i003',no:'1.2.1',name:'อัตราการส่งต่อผู้ป่วยฉุกเฉินภายใน 30 นาที',target:'>ร้อยละ 90',unit:'ร้อยละ',haLink:null,values:{'2565':'92.0','2566':'93.1','2567':'94.5','2568':'','2569':''}},
+    {id:'i004',no:'1.2.2',name:'จำนวนเครือข่ายสุขภาพที่เชื่อมโยงข้อมูล',target:'>10 แห่ง',unit:'แห่ง',haLink:null,values:{'2565':'8','2566':'10','2567':'12','2568':'','2569':''}},
+  ]},
+  {id:'pr03',name:'โครงการที่ 3 พัฒนาคุณภาพการดูแลโรคเรื้อรัง (DM/HT)',indicators:[
+    {id:'i005',no:'1.3.1',name:'อัตราผู้ป่วยเบาหวานควบคุมระดับน้ำตาลได้',target:'>ร้อยละ 40',unit:'ร้อยละ',haLink:'ha-p4-dm',values:{'2565':'38.2','2566':'41.5','2567':'43.0','2568':'','2569':''}},
+    {id:'i006',no:'1.3.2',name:'อัตราผู้ป่วยความดันโลหิตสูงควบคุมได้',target:'>ร้อยละ 50',unit:'ร้อยละ',haLink:'ha-p4-ht',values:{'2565':'48.0','2566':'52.3','2567':'54.1','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 2 === */
+{id:'p02',name:'แผนงานที่ 2 การพัฒนาคุณภาพและความปลอดภัย',color:'#a78bfa',icon:'✅',
+ projects:[
+  {id:'pr04',name:'โครงการที่ 4 พัฒนาระบบบริหารความเสี่ยงและความปลอดภัย',indicators:[
+    {id:'i007',no:'2.1.1',name:'จำนวนการรายงานอุบัติการณ์',target:'เพิ่มขึ้น',unit:'ครั้ง',haLink:'ha-p2-rm-1',values:{'2565':'3285','2566':'2250','2567':'2053','2568':'1049','2569':''}},
+    {id:'i008',no:'2.1.2',name:'สัดส่วน Near Miss / Miss (A-B)/(C ขึ้นไป)',target:'เพิ่มขึ้น',unit:'สัดส่วน',haLink:'ha-p2-rm-2',values:{'2565':'7.55','2566':'3.47','2567':'3.38','2568':'2.48','2569':''}},
+    {id:'i009',no:'2.1.3',name:'อัตราการรายงานอุบัติการณ์ระดับ A–B',target:'>ร้อยละ 80',unit:'ร้อยละ',haLink:'ha-p2-rm-3',values:{'2565':'88.31','2566':'77.64','2567':'77.17','2568':'73.59','2569':''}},
+  ]},
+  {id:'pr05',name:'โครงการที่ 5 พัฒนาระบบป้องกันการติดเชื้อในโรงพยาบาล (IC)',indicators:[
+    {id:'i010',no:'2.2.1',name:'อัตราการติดเชื้อในกระแสเลือด (BSI) ผู้ป่วย ICU',target:'<1 ต่อ 1,000 วัน',unit:'ต่อ 1,000 ventilator days',haLink:null,values:{'2565':'0.8','2566':'0.5','2567':'0.3','2568':'','2569':''}},
+    {id:'i011',no:'2.2.2',name:'อัตราการปฏิบัติตาม Hand Hygiene',target:'>ร้อยละ 90',unit:'ร้อยละ',haLink:null,values:{'2565':'88.0','2566':'91.2','2567':'93.5','2568':'','2569':''}},
+  ]},
+  {id:'pr06',name:'โครงการที่ 6 พัฒนาและรับรองคุณภาพมาตรฐาน HA',indicators:[
+    {id:'i012',no:'2.3.1',name:'ผลการประเมิน HA ระดับ สรพ.',target:'ผ่านการรับรอง',unit:'-',haLink:null,values:{'2565':'HA2','2566':'HA2','2567':'HA3','2568':'','2569':''}},
+    {id:'i013',no:'2.3.2',name:'จำนวนข้อร้องเรียนด้านคุณภาพบริการ',target:'0 ต่อปี',unit:'เรื่อง',haLink:null,values:{'2565':'2','2566':'1','2567':'0','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 3 === */
+{id:'p03',name:'แผนงานที่ 3 การพัฒนาระบบข้อมูล IT และเทคโนโลยีสารสนเทศ',color:'#34d399',icon:'💻',
+ projects:[
+  {id:'pr07',name:'โครงการที่ 7 พัฒนาระบบ HIS และฐานข้อมูลสุขภาพ',indicators:[
+    {id:'i014',no:'3.1.1',name:'ร้อยละความครบถ้วนของการบันทึกข้อมูลผู้ป่วย HIS',target:'>ร้อยละ 95',unit:'ร้อยละ',haLink:null,values:{'2565':'92.0','2566':'94.5','2567':'96.2','2568':'','2569':''}},
+    {id:'i015',no:'3.1.2',name:'อัตราความพร้อมใช้งานของระบบ HIS (Uptime)',target:'>ร้อยละ 99',unit:'ร้อยละ',haLink:null,values:{'2565':'98.5','2566':'99.1','2567':'99.5','2568':'','2569':''}},
+  ]},
+  {id:'pr08',name:'โครงการที่ 8 พัฒนา Dashboard และรายงานดิจิทัล',indicators:[
+    {id:'i016',no:'3.2.1',name:'จำนวน Dashboard KPI ที่พัฒนาและใช้งาน',target:'>5 Dashboard',unit:'Dashboard',haLink:null,values:{'2565':'2','2566':'3','2567':'5','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 4 === */
+{id:'p04',name:'แผนงานที่ 4 การพัฒนาบุคลากรและองค์กร',color:'#fbbf24',icon:'👥',
+ projects:[
+  {id:'pr09',name:'โครงการที่ 9 พัฒนาสมรรถนะบุคลากร',indicators:[
+    {id:'i017',no:'4.1.1',name:'อัตราความผูกพันของบุคลากรต่อองค์กร',target:'>ร้อยละ 80',unit:'ร้อยละ',haLink:'ha-p1-1-1',values:{'2565':'70.95','2566':'','2567':'','2568':'67.22','2569':''}},
+    {id:'i018',no:'4.1.2',name:'ร้อยละบุคลากรได้รับการพัฒนาตามแผน',target:'>ร้อยละ 90',unit:'ร้อยละ',haLink:null,values:{'2565':'88.0','2566':'91.5','2567':'92.0','2568':'','2569':''}},
+  ]},
+  {id:'pr10',name:'โครงการที่ 10 ส่งเสริมสุขภาพและความผาสุกบุคลากร',indicators:[
+    {id:'i019',no:'4.2.1',name:'ร้อยละผู้เข้าร่วมประชุมผู้นำพบเจ้าหน้าที่ (Town Hall)',target:'>ร้อยละ 50',unit:'ร้อยละ',haLink:'ha-p1-1-2',values:{'2565':'','2566':'46.93','2567':'51.02','2568':'75','2569':''}},
+    {id:'i020',no:'4.2.2',name:'อัตราการลาป่วยของบุคลากร',target:'<ร้อยละ 3',unit:'ร้อยละ',haLink:null,values:{'2565':'2.8','2566':'2.5','2567':'2.3','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 5 === */
+{id:'p05',name:'แผนงานที่ 5 การบริหารการเงินและงบประมาณ',color:'#f87171',icon:'💰',
+ projects:[
+  {id:'pr11',name:'โครงการที่ 11 บริหารการเงินการคลังให้มั่นคง',indicators:[
+    {id:'i021',no:'5.1.1',name:'การกำกับด้านการเงินตามเกณฑ์วิกฤต 7 ระดับ',target:'<ระดับ 3',unit:'ระดับ',haLink:'ha-p1-1-3',values:{'2565':'ระดับ 0','2566':'ระดับ 0','2567':'ระดับ 1','2568':'ระดับ 3','2569':''}},
+    {id:'i022',no:'5.1.2',name:'อัตราส่วนรายได้ต่อรายจ่าย',target:'>1',unit:'อัตราส่วน',haLink:null,values:{'2565':'1.05','2566':'1.02','2567':'0.98','2568':'','2569':''}},
+    {id:'i023',no:'5.1.3',name:'มูลค่าสินทรัพย์สุทธิ',target:'เพิ่มขึ้น',unit:'บาท',haLink:null,values:{'2565':'120M','2566':'118M','2567':'115M','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 6 === */
+{id:'p06',name:'แผนงานที่ 6 การดูแลสิ่งแวดล้อมและความปลอดภัย',color:'#4ade80',icon:'🌿',
+ projects:[
+  {id:'pr12',name:'โครงการที่ 12 จัดการสิ่งแวดล้อมและขยะติดเชื้อ',indicators:[
+    {id:'i024',no:'6.1.1',name:'ผลการวิเคราะห์คุณภาพน้ำเสียที่ผ่านการบำบัด (13 Parameters)',target:'ผ่านเกณฑ์',unit:'-',haLink:'ha-p1-1-5',values:{'2565':'ผ่าน','2566':'ผ่าน','2567':'ไม่ผ่าน','2568':'ไม่ผ่าน','2569':''}},
+    {id:'i025',no:'6.1.2',name:'ข้อร้องเรียนของชุมชนเกี่ยวกับขยะติดเชื้อ/น้ำเสีย',target:'0 เรื่อง',unit:'เรื่อง',haLink:'ha-p1-1-6',values:{'2565':'0','2566':'0','2567':'0','2568':'0','2569':''}},
+  ]},
+  {id:'pr13',name:'โครงการที่ 13 ลดการใช้พลังงานและเป็นมิตรต่อสิ่งแวดล้อม',indicators:[
+    {id:'i026',no:'6.2.1',name:'ร้อยละการลดปริมาณขยะติดเชื้อ',target:'>ร้อยละ 5',unit:'ร้อยละ',haLink:null,values:{'2565':'3.0','2566':'5.5','2567':'6.2','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 7 === */
+{id:'p07',name:'แผนงานที่ 7 การส่งเสริมสุขภาพและป้องกันโรค',color:'#2dd4bf',icon:'💊',
+ projects:[
+  {id:'pr14',name:'โครงการที่ 14 ส่งเสริมสุขภาพกลุ่มเสี่ยง',indicators:[
+    {id:'i027',no:'7.1.1',name:'อัตราความครอบคลุมวัคซีนไข้หวัดใหญ่กลุ่มเสี่ยง',target:'>ร้อยละ 80',unit:'ร้อยละ',haLink:null,values:{'2565':'75.0','2566':'82.0','2567':'85.0','2568':'','2569':''}},
+    {id:'i028',no:'7.1.2',name:'อัตราความครอบคลุมการตรวจสุขภาพผู้สูงอายุ',target:'>ร้อยละ 70',unit:'ร้อยละ',haLink:null,values:{'2565':'65.0','2566':'71.0','2567':'74.5','2568':'','2569':''}},
+  ]},
+  {id:'pr15',name:'โครงการที่ 15 เฝ้าระวังและควบคุมโรคในชุมชน',indicators:[
+    {id:'i029',no:'7.2.1',name:'อัตราป่วยโรคไข้เลือดออก (ต่อ 100,000 ประชากร)',target:'<50',unit:'ต่อ 100,000',haLink:null,values:{'2565':'42','2566':'35','2567':'28','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 8 === */
+{id:'p08',name:'แผนงานที่ 8 การธรรมาภิบาลและความโปร่งใส',color:'#fb923c',icon:'⚖️',
+ projects:[
+  {id:'pr16',name:'โครงการที่ 16 เสริมสร้างธรรมาภิบาล ITA',indicators:[
+    {id:'i030',no:'8.1.1',name:'อัตราผ่านการประเมินคุณธรรมและความโปร่งใส (ITA)',target:'>ร้อยละ 90',unit:'ร้อยละ',haLink:'ha-p1-1-4',values:{'2565':'100','2566':'100','2567':'100','2568':'100','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 9 === */
+{id:'p09',name:'แผนงานที่ 9 การพัฒนาระบบยาและเภสัชกรรม',color:'#818cf8',icon:'💉',
+ projects:[
+  {id:'pr17',name:'โครงการที่ 17 ความปลอดภัยด้านยา',indicators:[
+    {id:'i031',no:'9.1.1',name:'อัตรา Medication Error ระดับ C ขึ้นไป',target:'<0.01 ต่อ 1,000 วันนอน',unit:'ต่อ 1,000',haLink:null,values:{'2565':'0.005','2566':'0.003','2567':'0.002','2568':'','2569':''}},
+    {id:'i032',no:'9.1.2',name:'อัตราการใช้ยา Antibiotics ใน OPD',target:'ลดลง',unit:'ร้อยละ',haLink:null,values:{'2565':'22.0','2566':'20.5','2567':'19.2','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 10 === */
+{id:'p10',name:'แผนงานที่ 10 การดูแลสุขภาพมารดาและเด็ก',color:'#f9a8d4',icon:'👶',
+ projects:[
+  {id:'pr18',name:'โครงการที่ 18 พัฒนาระบบบริการมารดาและทารก',indicators:[
+    {id:'i033',no:'10.1.1',name:'อัตราตายมารดา (ต่อ 100,000 การคลอดมีชีพ)',target:'0',unit:'ต่อ 100,000',haLink:null,values:{'2565':'0','2566':'0','2567':'0','2568':'','2569':''}},
+    {id:'i034',no:'10.1.2',name:'อัตราทารกแรกเกิดน้ำหนักน้อยกว่า 2,500 กรัม',target:'<ร้อยละ 7',unit:'ร้อยละ',haLink:null,values:{'2565':'6.5','2566':'6.2','2567':'5.8','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 11 === */
+{id:'p11',name:'แผนงานที่ 11 การพัฒนาสถานที่และอาคารสถานที่',color:'#94a3b8',icon:'🏗️',
+ projects:[
+  {id:'pr19',name:'โครงการที่ 19 ปรับปรุงโครงสร้างพื้นฐาน',indicators:[
+    {id:'i035',no:'11.1.1',name:'ร้อยละโครงการก่อสร้าง/ปรับปรุงแล้วเสร็จตามแผน',target:'>ร้อยละ 80',unit:'ร้อยละ',haLink:null,values:{'2565':'75.0','2566':'82.0','2567':'85.0','2568':'','2569':''}},
+  ]},
+ ]},
+/* === แผนงานที่ 12 === */
+{id:'p12',name:'แผนงานที่ 12 การพัฒนาชุมชนและพันธมิตรสุขภาพ',color:'#6ee7b7',icon:'🤝',
+ projects:[
+  {id:'pr20',name:'โครงการที่ 20 พัฒนาเครือข่ายชุมชนและอสม.',indicators:[
+    {id:'i036',no:'12.1.1',name:'จำนวน อสม. ที่ผ่านการอบรมเชิงปฏิบัติการ',target:'>200 คน',unit:'คน',haLink:null,values:{'2565':'180','2566':'210','2567':'220','2568':'','2569':''}},
+  ]},
+ ]},
+    ]}; // end plans
+}
+
+// ============================================================
+// HA KPI DATA
+// ============================================================
+function getDefaultHaKPI() {
+  return {
+    part1: {
+      sections: [
+        { id:'1-1', name:'1-1 การนำองค์กร', responsible:'HRD / บริหาร',
+          indicators:[
+            {id:'h1-1-1',no:'1',name:'อัตราความผูกพันของบุคลากรต่อองค์กร',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'HRD',linkStrat:'i017',values:{'2565':'70.95','2566':'','2567':'','2568':'67.22','2569':''}},
+            {id:'h1-1-2',no:'2',name:'ร้อยละผู้เข้าร่วมประชุมผู้นำพบเจ้าหน้าที่ (Town Hall meeting)',target:'≥ ร้อยละ 50',unit:'ร้อยละ',responsible:'HRD',linkStrat:'i019',values:{'2565':'','2566':'46.93','2567':'51.02','2568':'75','2569':''}},
+            {id:'h1-1-3',no:'3',name:'การกำกับด้านการเงินตามเกณฑ์วิกฤต 7 ระดับ',target:'< ระดับ 3',unit:'ระดับ',responsible:'การเงิน (พี่อ๋อย)',linkStrat:'i021',values:{'2565':'ระดับ 0','2566':'ระดับ 0','2567':'ระดับ 1','2568':'ระดับ 3','2569':''}},
+            {id:'h1-1-4',no:'4',name:'อัตราผ่านการประเมินคุณธรรมและความโปร่งใสในการดำเนินงานของหน่วยงานภาครัฐ (ITA)',target:'> ร้อยละ 90',unit:'ร้อยละ',responsible:'บริหาร/น้ำหวาน',linkStrat:'i030',values:{'2565':'100','2566':'100','2567':'100','2568':'100','2569':''}},
+            {id:'h1-1-5',no:'5',name:'ผลการวิเคราะห์คุณภาพน้ำเสียที่ผ่านการบำบัด (13 Parameters)',target:'ผ่านเกณฑ์',unit:'-',responsible:'สมจิตร',linkStrat:'i024',values:{'2565':'ผ่าน','2566':'ผ่าน','2567':'ไม่ผ่าน','2568':'ไม่ผ่าน','2569':''}},
+            {id:'h1-1-6',no:'6',name:'ข้อร้องเรียนของชุมชนเกี่ยวกับขยะติดเชื้อ/น้ำเสีย',target:'0 เรื่อง',unit:'เรื่อง',responsible:'สมจิตร',linkStrat:'i025',values:{'2565':'0','2566':'0','2567':'0','2568':'0','2569':''}},
+          ]},
+        { id:'1-2', name:'1-2 กลยุทธ์', responsible:'เลขาคณะกรรมการ',indicators:[
+            {id:'h1-2-1',no:'1',name:'ร้อยละของตัวชี้วัดยุทธศาสตร์ที่ผ่านเป้าหมาย',target:'> ร้อยละ 80',unit:'ร้อยละ',responsible:'เลขาฯ',linkStrat:null,values:{'2565':'','2566':'','2567':'','2568':'','2569':''}},
+            {id:'h1-2-2',no:'2',name:'จำนวนโครงการที่ดำเนินการได้ตามแผนยุทธศาสตร์',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'เลขาฯ',linkStrat:null,values:{'2565':'','2566':'','2567':'','2568':'','2569':''}},
+          ]},
+        { id:'1-3', name:'1-3 ผู้ป่วย ผู้รับผลงาน', responsible:'PCT / OPD',indicators:[
+            {id:'h1-3-1',no:'1',name:'ร้อยละความพึงพอใจผู้รับบริการ OPD',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'OPD',linkStrat:'i001',values:{'2565':'82.5','2566':'84.1','2567':'85.0','2568':'','2569':''}},
+            {id:'h1-3-2',no:'2',name:'ร้อยละความพึงพอใจผู้รับบริการ IPD',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'IPD',linkStrat:'i002',values:{'2565':'83.2','2566':'85.5','2567':'86.2','2568':'','2569':''}},
+          ]},
+        { id:'1-4', name:'1-4 การวัด วิเคราะห์และจัดการความรู้', responsible:'IT / QMR',indicators:[
+            {id:'h1-4-1',no:'1',name:'ร้อยละความครบถ้วนของการบันทึกข้อมูล HIS',target:'≥ ร้อยละ 95',unit:'ร้อยละ',responsible:'IT',linkStrat:'i014',values:{'2565':'92.0','2566':'94.5','2567':'96.2','2568':'','2569':''}},
+          ]},
+        { id:'1-5', name:'1-5 บุคลากร', responsible:'HRD',indicators:[
+            {id:'h1-5-1',no:'1',name:'ร้อยละบุคลากรได้รับการพัฒนาตามแผน',target:'≥ ร้อยละ 90',unit:'ร้อยละ',responsible:'HRD',linkStrat:'i018',values:{'2565':'88.0','2566':'91.5','2567':'92.0','2568':'','2569':''}},
+            {id:'h1-5-2',no:'2',name:'อัตราการลาป่วยของบุคลากร',target:'< ร้อยละ 3',unit:'ร้อยละ',responsible:'HRD',linkStrat:'i020',values:{'2565':'2.8','2566':'2.5','2567':'2.3','2568':'','2569':''}},
+          ]},
+        { id:'1-6', name:'1-6 การปฏิบัติการ', responsible:'RM / QMR',indicators:[
+            {id:'h1-6-1',no:'1',name:'ร้อยละโครงการ/กิจกรรมที่ดำเนินการตามแผน',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'QMR',linkStrat:null,values:{'2565':'','2566':'','2567':'','2568':'','2569':''}},
+          ]},
+      ]
+    },
+    part2: {
+      sections: [
+        { id:'RM', name:'RM บริหารความเสี่ยง', responsible:'ติงลี่',
+          indicators:[
+            {id:'h2-rm-1',no:'1',name:'จำนวนการรายงานอุบัติการณ์',target:'เพิ่มขึ้น',unit:'ครั้ง',responsible:'ติงลี่',linkStrat:'i007',values:{'2565':'3285','2566':'2250','2567':'2053','2568':'1049','2569':'322'}},
+            {id:'h2-rm-2',no:'2',name:'สัดส่วนเหตุการณ์ Near Miss (A-B) / Miss (C ขึ้นไป)',target:'เพิ่มขึ้น',unit:'สัดส่วน',responsible:'ติงลี่',linkStrat:'i008',values:{'2565':'7.55','2566':'3.47','2567':'3.38','2568':'2.48','2569':'3.74'}},
+            {id:'h2-rm-3',no:'3',name:'อัตราการรายงานอุบัติการณ์ระดับ A–B',target:'> ร้อยละ 80',unit:'ร้อยละ',responsible:'ติงลี่',linkStrat:'i009',values:{'2565':'88.31','2566':'77.64','2567':'77.17','2568':'73.59','2569':'78.89'}},
+            {id:'h2-rm-4',no:'4',name:'อัตราการทบทวนแก้ไขอุบัติการณ์ ระดับ A–D ในโปรแกรม NRLS',target:'> ร้อยละ 80',unit:'ร้อยละ',responsible:'ติงลี่',linkStrat:null,values:{'2565':'','2566':'','2567':'84','2568':'69.49','2569':'36.78'}},
+            {id:'h2-rm-5',no:'5',name:'อัตราการทบทวนบริการด้าน Non clinic ระดับ 1-3',target:'ร้อยละ 100',unit:'ร้อยละ',responsible:'ติงลี่',linkStrat:null,values:{'2565':'','2566':'','2567':'60','2568':'47.61','2569':'6.66'}},
+            {id:'h2-rm-6',no:'6',name:'อัตราการทบทวนอุบัติการณ์ ระดับ E–I และอุบัติการณ์ระดับ 4-5',target:'ร้อยละ 100',unit:'ร้อยละ',responsible:'ติงลี่',linkStrat:null,values:{'2565':'100','2566':'100','2567':'100','2568':'100','2569':''}},
+            {id:'h2-rm-7',no:'7',name:'จำนวนอุบัติการณ์ E–I ที่เกิดซ้ำจากสาเหตุเดิม/ใหม่',target:'0 ครั้ง',unit:'ครั้ง',responsible:'ติงลี่',linkStrat:null,values:{'2565':'0','2566':'1','2567':'0','2568':'0','2569':'0'}},
+            {id:'h2-rm-8',no:'8',name:'จำนวนข้อร้องเรียน social media ที่ส่งผลต่อภาพลักษณ์องค์กร (ระดับ 3 ขึ้นไป)',target:'0 เรื่อง',unit:'เรื่อง',responsible:'ติงลี่',linkStrat:null,values:{'2565':'1','2566':'1','2567':'0','2568':'0','2569':'0'}},
+          ]},
+        { id:'NSO', name:'NSO การพยาบาล', responsible:'หัวหน้าพยาบาล',indicators:[
+            {id:'h2-nso-1',no:'1',name:'อัตราการเกิด Pressure Injury ระดับ 2 ขึ้นไป',target:'< 1 ต่อ 1,000 วันนอน',unit:'ต่อ 1,000 วัน',responsible:'NSO',linkStrat:null,values:{'2565':'','2566':'','2567':'','2568':'','2569':''}},
+            {id:'h2-nso-2',no:'2',name:'อัตราการผูกยึดร่างกายผู้ป่วย',target:'ลดลง',unit:'ร้อยละ',responsible:'NSO',linkStrat:null,values:{'2565':'','2566':'','2567':'','2568':'','2569':''}},
+          ]},
+        { id:'MSO', name:'MSO บริการทางการแพทย์', responsible:'แพทย์ / QMR',indicators:[
+            {id:'h2-mso-1',no:'1',name:'อัตราผู้ป่วยกลับมา Readmit ภายใน 28 วัน',target:'< ร้อยละ 5',unit:'ร้อยละ',responsible:'แพทย์',linkStrat:null,values:{'2565':'','2566':'','2567':'','2568':'','2569':''}},
+          ]},
+        { id:'ENV', name:'ENV สิ่งแวดล้อม', responsible:'สมจิตร',indicators:[
+            {id:'h2-env-1',no:'1',name:'ผลการวิเคราะห์คุณภาพน้ำเสีย (13 Parameters)',target:'ผ่านเกณฑ์',unit:'-',responsible:'สมจิตร',linkStrat:'i024',values:{'2565':'ผ่าน','2566':'ผ่าน','2567':'ไม่ผ่าน','2568':'ไม่ผ่าน','2569':''}},
+          ]},
+        { id:'IC', name:'IC การป้องกันการติดเชื้อ', responsible:'IC nurse',indicators:[
+            {id:'h2-ic-1',no:'1',name:'อัตราการติดเชื้อ BSI ผู้ป่วย ICU',target:'< 1 ต่อ 1,000 ventilator days',unit:'ต่อ 1,000',responsible:'IC',linkStrat:'i010',values:{'2565':'0.8','2566':'0.5','2567':'0.3','2568':'','2569':''}},
+            {id:'h2-ic-2',no:'2',name:'อัตราการปฏิบัติ Hand Hygiene',target:'> ร้อยละ 90',unit:'ร้อยละ',responsible:'IC',linkStrat:'i011',values:{'2565':'88.0','2566':'91.2','2567':'93.5','2568':'','2569':''}},
+          ]},
+        { id:'IM', name:'IM เวชระเบียน', responsible:'IM',indicators:[
+            {id:'h2-im-1',no:'1',name:'ร้อยละความครบถ้วนของการบันทึกเวชระเบียน',target:'> ร้อยละ 90',unit:'ร้อยละ',responsible:'IM',linkStrat:null,values:{'2565':'','2566':'','2567':'','2568':'','2569':''}},
+          ]},
+        { id:'PTC', name:'PTC เภสัชกรรม', responsible:'เภสัชกร',indicators:[
+            {id:'h2-ptc-1',no:'1',name:'อัตรา Medication Error ระดับ C ขึ้นไป',target:'< 0.01 ต่อ 1,000 วันนอน',unit:'ต่อ 1,000',responsible:'เภสัชกร',linkStrat:'i031',values:{'2565':'0.005','2566':'0.003','2567':'0.002','2568':'','2569':''}},
+          ]},
+        { id:'LAB', name:'LAB+X-ray ห้องปฏิบัติการ', responsible:'LAB',indicators:[
+            {id:'h2-lab-1',no:'1',name:'ร้อยละผลการทดสอบ proficiency testing ผ่านเกณฑ์',target:'> ร้อยละ 80',unit:'ร้อยละ',responsible:'LAB',linkStrat:null,values:{'2565':'','2566':'','2567':'','2568':'','2569':''}},
+          ]},
+        { id:'EPI', name:'เฝ้าระวังโรค', responsible:'งานระบาด',indicators:[
+            {id:'h2-epi-1',no:'1',name:'อัตราป่วยโรคไข้เลือดออก (ต่อ 100,000 ประชากร)',target:'< 50 ต่อ 100,000',unit:'ต่อ 100,000',responsible:'ระบาด',linkStrat:'i029',values:{'2565':'42','2566':'35','2567':'28','2568':'','2569':''}},
+          ]},
+        { id:'COM', name:'การทำงานกับชุมชน', responsible:'ชุมชน/อสม.',indicators:[
+            {id:'h2-com-1',no:'1',name:'จำนวน อสม. ที่ผ่านการอบรมเชิงปฏิบัติการ',target:'> 200 คน',unit:'คน',responsible:'ชุมชน',linkStrat:'i036',values:{'2565':'180','2566':'210','2567':'220','2568':'','2569':''}},
+          ]},
+      ]
+    },
+    part4: {
+      sections: [
+        { id:'4-1', name:'4-1 ผลลัพธ์ด้านความปลอดภัย', responsible:'RM',
+          indicators:[
+            {id:'h4-1-1',no:'1',name:'อัตราตายมารดา (ต่อ 100,000 การคลอดมีชีพ)',target:'0',unit:'ต่อ 100,000',responsible:'OB',linkStrat:'i033',values:{'2565':'0','2566':'0','2567':'0','2568':'','2569':''}},
+            {id:'h4-1-2',no:'2',name:'อัตราทารกแรกเกิดน้ำหนักน้อยกว่า 2,500 กรัม',target:'< ร้อยละ 7',unit:'ร้อยละ',responsible:'OB',linkStrat:'i034',values:{'2565':'6.5','2566':'6.2','2567':'5.8','2568':'','2569':''}},
+          ]},
+        { id:'4-2', name:'4-2 ผลลัพธ์ด้านคุณภาพบริการ', responsible:'QMR',
+          indicators:[
+            {id:'h4-2-1',no:'1',name:'ผลการประเมิน HA ระดับ สรพ.',target:'ผ่านการรับรอง',unit:'-',responsible:'QMR',linkStrat:'i012',values:{'2565':'HA2','2566':'HA2','2567':'HA3','2568':'','2569':''}},
+            {id:'h4-2-2',no:'2',name:'อัตราผู้ป่วยเบาหวานควบคุมระดับน้ำตาลได้',target:'> ร้อยละ 40',unit:'ร้อยละ',responsible:'DM Nurse',linkStrat:'i005',values:{'2565':'38.2','2566':'41.5','2567':'43.0','2568':'','2569':''}},
+            {id:'h4-2-3',no:'3',name:'อัตราผู้ป่วยความดันโลหิตสูงควบคุมได้',target:'> ร้อยละ 50',unit:'ร้อยละ',responsible:'HT Nurse',linkStrat:'i006',values:{'2565':'48.0','2566':'52.3','2567':'54.1','2568':'','2569':''}},
+          ]},
+        { id:'4-3', name:'4-3 ผลลัพธ์ด้านประสิทธิภาพ', responsible:'การเงิน',
+          indicators:[
+            {id:'h4-3-1',no:'1',name:'อัตราส่วนรายได้ต่อรายจ่าย',target:'> 1',unit:'อัตราส่วน',responsible:'การเงิน',linkStrat:'i022',values:{'2565':'1.05','2566':'1.02','2567':'0.98','2568':'','2569':''}},
+            {id:'h4-3-2',no:'2',name:'อัตราการส่งต่อผู้ป่วยฉุกเฉินภายใน 30 นาที',target:'> ร้อยละ 90',unit:'ร้อยละ',responsible:'ER',linkStrat:'i003',values:{'2565':'92.0','2566':'93.1','2567':'94.5','2568':'','2569':''}},
+          ]},
+      ]
+    }
+  };
+}
+
+// ============================================================
+// STATUS HELPER
+// ============================================================
+function getStatus(value, target) {
+  if (value===''||value===null||value===undefined) return 'pending';
+  const v = value.toString().toLowerCase();
+  const t = target.toString().toLowerCase();
+  if (v==='na') return 'na';
+  if (v.includes('ผ่าน')&&!v.includes('ไม่')) return 'pass';
+  if (v.includes('ไม่ผ่าน')) return 'fail';
+  const numV = parseFloat(v);
+  if (isNaN(numV)) { if(v==='' || v==='na') return 'na'; return 'na'; }
+  if (t.includes('>')) {
+    const numT = parseFloat(t.replace(/[^0-9.]/g,''));
+    if (!isNaN(numT)) return numV >= numT ? 'pass' : 'fail';
+  }
+  if (t.includes('<')) {
+    const numT = parseFloat(t.replace(/[^0-9.]/g,''));
+    if (!isNaN(numT)) return numV <= numT ? 'pass' : 'fail';
+  }
+  if (t.includes('เพิ่มขึ้น')) return 'na'; // trend
+  return 'na';
+}
+const statusLabel = {pass:'✅ ผ่าน',fail:'❌ ไม่ผ่าน',na:'— N/A',pending:'⏳ รอข้อมูล'};
+const statusClass = {pass:'status-pass',fail:'status-fail',na:'status-na',pending:'status-pending'};
+
+// ============================================================
+// RENDER OVERVIEW
+// ============================================================
+let chartOverviewRef, chartHARef;
+function renderOverview() {
+  const d = getData();
+  const allInd = d.strategicKPI.plans.flatMap(p=>p.projects.flatMap(pr=>pr.indicators));
+  let pass=0,fail=0,pend=0;
+  allInd.forEach(i=>{
+    const s=getStatus(i.values[activeYear], i.target);
+    if(s==='pass')pass++;
+    else if(s==='fail')fail++;
+    else pend++;
+  });
+  document.getElementById('ov-strat-pass').textContent=pass;
+  document.getElementById('ov-strat-fail').textContent=fail;
+  document.getElementById('ov-strat-na').textContent=pend;
+  // HA count
+  const haTotal = d.haKPI.part1.sections.reduce((a,s)=>a+s.indicators.length,0)
+    + d.haKPI.part2.sections.reduce((a,s)=>a+s.indicators.length,0)
+    + d.haKPI.part4.sections.reduce((a,s)=>a+s.indicators.length,0);
+  document.getElementById('ov-ha-total').textContent=haTotal;
+  // watch lists
+  const failList = allInd.filter(i=>getStatus(i.values[activeYear],i.target)==='fail');
+  const stratWL = document.getElementById('stratWatchList');
+  if(failList.length===0) stratWL.innerHTML='<div style="color:var(--success);text-align:center;padding:20px">🎉 ทุกตัวชี้วัดผ่านเป้าหมาย!</div>';
+  else stratWL.innerHTML=failList.map(i=>`
+    <div class="kpi-overview-row">
+      <div class="kpi-num" style="background:rgba(239,68,68,.15);color:var(--danger)">${i.no.split('.').pop()}</div>
+      <div class="kpi-overview-name">${i.name}</div>
+      <div style="font-size:11px;color:var(--danger);flex-shrink:0">${i.values[activeYear]||'-'}</div>
+    </div>`).join('');
+  // HA pending
+  const haAllInd = [...d.haKPI.part1.sections,...d.haKPI.part2.sections,...d.haKPI.part4.sections].flatMap(s=>s.indicators);
+  const haPend = haAllInd.filter(i=>!i.values[activeYear]);
+  const haWL = document.getElementById('haWatchList');
+  if(haPend.length===0) haWL.innerHTML='<div style="color:var(--success);text-align:center;padding:20px">🎉 บันทึกข้อมูลครบทุกตัวชี้วัดแล้ว!</div>';
+  else haWL.innerHTML=haPend.map(i=>`
+    <div class="kpi-overview-row">
+      <div class="kpi-num" style="background:rgba(245,158,11,.15);color:var(--warning)">!</div>
+      <div class="kpi-overview-name">${i.name}</div>
+      <div style="font-size:11px;color:var(--muted);flex-shrink:0">${i.responsible||''}</div>
+    </div>`).join('');
+  // Charts
+  if(chartOverviewRef) chartOverviewRef.destroy();
+  const ctx1 = document.getElementById('chartOverview').getContext('2d');
+  chartOverviewRef = new Chart(ctx1,{type:'doughnut',data:{labels:['ผ่านเป้าหมาย','ไม่ผ่าน','รอข้อมูล'],datasets:[{data:[pass,fail,pend],backgroundColor:['#10b981','#ef4444','#f59e0b'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#8899aa',font:{family:'Prompt',size:11}}}}}});
+  if(chartHARef) chartHARef.destroy();
+  const ctx2 = document.getElementById('chartHA').getContext('2d');
+  const rmInd = d.haKPI.part2.sections.find(s=>s.id==='RM').indicators.find(i=>i.id==='h2-rm-1');
+  chartHARef = new Chart(ctx2,{type:'bar',data:{labels:YEARS.slice(0,-1),datasets:[{label:'จำนวนรายงาน',data:YEARS.slice(0,-1).map(y=>parseInt(rmInd.values[y])||0),backgroundColor:'rgba(56,189,248,.7)',borderRadius:6}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8899aa',font:{family:'Prompt',size:11}}}},scales:{x:{ticks:{color:'#8899aa',font:{family:'Prompt'}},grid:{color:'rgba(42,58,82,.5)'}},y:{ticks:{color:'#8899aa',font:{family:'Prompt'}},grid:{color:'rgba(42,58,82,.5)'}}}}});
+}
+
+// ============================================================
+// RENDER STRATEGIC
+// ============================================================
+function renderStrategicPage(groupFilter) {
+  const d = getData();
+  const container = document.getElementById('strategicAccordion');
+  if (!container) return;
+  let plans = d.strategicKPI.plans;
+  if(groupFilter) { /* filter by plan group if needed */ }
+  container.innerHTML = plans.map((plan,pi)=>{
+    const allInd = plan.projects.flatMap(p=>p.indicators);
+    const passCount = allInd.filter(i=>getStatus(i.values[activeYear],i.target)==='pass').length;
+    return `
+    <div class="panel open" id="plan-${plan.id}">
+      <div class="panel-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="panel-head-icon" style="background:${plan.color}22;color:${plan.color}">${plan.icon}</div>
+        <h3>${plan.name}</h3>
+        <div class="panel-meta">
+          <span>${passCount}/${allInd.length} ผ่าน</span>
+          <span>${plan.projects.length} โครงการ</span>
+        </div>
+        <span class="panel-arrow">›</span>
+      </div>
+      <div class="panel-body">
+        ${plan.projects.map(proj=>`
+          <div style="margin-bottom:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);padding:6px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px">
+              📁 ${proj.name}
+            </div>
+            <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th style="width:40px">ที่</th>
+                <th>ตัวชี้วัด</th>
+                <th>เป้าหมาย</th>
+                <th>ค่าปี ${activeYear}</th>
+                <th>สถานะ</th>
+                <th>เชื่อมโยง HA</th>
+                ${canEdit('strategic')?'<th>จัดการ</th>':''}
+              </tr></thead>
+              <tbody>
+                ${proj.indicators.map(ind=>{
+                  const s = getStatus(ind.values[activeYear], ind.target);
+                  return `<tr>
+                    <td style="color:var(--muted)">${ind.no}</td>
+                    <td>${ind.name}</td>
+                    <td style="color:var(--muted);font-size:12px">${ind.target}</td>
+                    <td style="font-weight:600">${ind.values[activeYear]||'—'}</td>
+                    <td><span class="status ${statusClass[s]}">${statusLabel[s]}</span></td>
+                    <td>${ind.haLink?'<span class="ha-badge">🔗 HA</span>':'<span style="color:var(--muted);font-size:11px">—</span>'}</td>
+                    ${canEdit('strategic')?`<td><button class="btn btn-sm btn-outline" onclick="openEditKPI('strategic','${ind.id}')">✏️</button></td>`:''}
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterStrategic(q) {
+  const rows = document.querySelectorAll('#strategicAccordion tbody tr');
+  rows.forEach(r=>{ r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none'; });
+}
+
+// ============================================================
+// RENDER HA PART 1
+// ============================================================
+let p1ActiveSection = '1-1';
+function renderHA_P1() {
+  const d = getData();
+  const sections = d.haKPI.part1.sections;
+  // tabs
+  document.getElementById('p1SubTabs').innerHTML = sections.map(s=>
+    `<div class="part-tab${s.id===p1ActiveSection?' active':''}" onclick="setP1Section('${s.id}')">${s.name}</div>`
+  ).join('');
+  // content
+  renderHATable('p1Content', sections.find(s=>s.id===p1ActiveSection), 'ha-part1', d);
+}
+function setP1Section(id) {
+  p1ActiveSection=id;
+  renderHA_P1();
+}
+
+// ============================================================
+// RENDER HA PART 2
+// ============================================================
+let p2ActiveSection = 'RM';
+function renderHA_P2() {
+  const d = getData();
+  const sections = d.haKPI.part2.sections;
+  document.getElementById('p2SubTabs').innerHTML = sections.map(s=>
+    `<div class="part-tab${s.id===p2ActiveSection?' active':''}" onclick="setP2Section('${s.id}')">${s.id}: ${s.name.split(' ').slice(1).join(' ')}</div>`
+  ).join('');
+  renderHATable('p2Content', sections.find(s=>s.id===p2ActiveSection), 'ha-part2', d);
+}
+function setP2Section(id) {
+  p2ActiveSection=id;
+  renderHA_P2();
+}
+
+// ============================================================
+// RENDER HA PART 4
+// ============================================================
+let p4ActiveSection = '4-1';
+function renderHA_P4() {
+  const d = getData();
+  const sections = d.haKPI.part4.sections;
+  document.getElementById('p4SubTabs').innerHTML = sections.map(s=>
+    `<div class="part-tab${s.id===p4ActiveSection?' active':''}" onclick="setP4Section('${s.id}')">${s.name}</div>`
+  ).join('');
+  renderHATable('p4Content', sections.find(s=>s.id===p4ActiveSection), 'ha-part4', d);
+}
+function setP4Section(id) {
+  p4ActiveSection=id;
+  renderHA_P4();
+}
+
+// ============================================================
+// SHARED HA TABLE RENDERER
+// ============================================================
+function renderHATable(containerId, section, editPerm, d) {
+  const c = document.getElementById(containerId);
+  if (!c || !section) return;
+  const canE = canEdit(editPerm) || (currentUser && currentUser.role==='admin' && currentUser.canEdit.some(x=>x.startsWith(editPerm)));
+  const superE = currentUser && currentUser.role==='superadmin';
+  const allowEdit = canE || superE;
+  c.innerHTML = `
+    <div class="panel open">
+      <div class="panel-head" style="cursor:default">
+        <div class="panel-head-icon" style="background:rgba(56,189,248,.1);color:var(--accent)">📋</div>
+        <h3>${section.name}</h3>
+        <div class="panel-meta"><span>ผู้รับผิดชอบ: ${section.responsible}</span></div>
+      </div>
+      <div class="panel-body" style="display:block">
+        <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:36px">ที่</th>
+            <th>ตัวชี้วัด</th>
+            <th>เป้าหมาย</th>
+            <th>ผู้รับผิดชอบ</th>
+            ${YEARS.map(y=>`<th style="text-align:center">${y}</th>`).join('')}
+            <th>สถานะ ${activeYear}</th>
+            <th>ยุทธศาสตร์</th>
+            ${allowEdit?'<th>จัดการ</th>':''}
+          </tr></thead>
+          <tbody>
+            ${section.indicators.map(ind=>{
+              const s=getStatus(ind.values[activeYear],ind.target);
+              const partId = section.id.split('-')[0]==='4'?'ha-part4':containerId.includes('p2')?'ha-part2':'ha-part1';
+              return `<tr>
+                <td style="color:var(--muted)">${ind.no}</td>
+                <td>${ind.name}</td>
+                <td style="color:var(--muted);font-size:11px;white-space:nowrap">${ind.target}</td>
+                <td style="font-size:11px;color:var(--muted)">${ind.responsible||''}</td>
+                ${YEARS.map(y=>{
+                  const v=ind.values[y];
+                  const s2=getStatus(v||'',ind.target);
+                  const col=s2==='pass'?'var(--success)':s2==='fail'?'var(--danger)':'var(--text)';
+                  return `<td style="text-align:center;color:${col};font-weight:${v?'600':'400'}">${v||'—'}</td>`;
+                }).join('')}
+                <td><span class="status ${statusClass[s]}">${statusLabel[s]}</span></td>
+                <td>${ind.linkStrat?`<span class="link-badge" title="เชื่อมโยง KPI ยุทธศาสตร์">🔗 ยุทธ</span>`:'<span style="color:var(--border)">—</span>'}</td>
+                ${allowEdit?`<td><button class="btn btn-sm btn-primary" onclick="openEditHA('${partId}','${section.id}','${ind.id}')">✏️ บันทึก</button></td>`:''}
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+    <div class="panel open" style="margin-top:16px">
+      <div class="panel-head" style="cursor:default">
+        <div class="panel-head-icon" style="background:rgba(16,185,129,.1);color:var(--success)">📊</div>
+        <h3>กราฟแนวโน้ม ${section.name}</h3>
+      </div>
+      <div class="panel-body" style="display:block">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+          ${section.indicators.slice(0,4).map((ind,i)=>`
+            <div class="chart-box">
+              <h4>${ind.no}. ${ind.name.slice(0,35)}${ind.name.length>35?'...':''}</h4>
+              <canvas id="miniChart-${containerId}-${i}" height="120"></canvas>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>`;
+  // render mini charts
+  setTimeout(()=>{
+    section.indicators.slice(0,4).forEach((ind,i)=>{
+      const ctx = document.getElementById(`miniChart-${containerId}-${i}`);
+      if(!ctx) return;
+      new Chart(ctx,{type:'line',data:{labels:YEARS,datasets:[{label:ind.unit||'ค่า',data:YEARS.map(y=>parseFloat(ind.values[y])||null),borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.1)',tension:.4,fill:true,pointRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8899aa',font:{size:10,family:'Prompt'}},grid:{color:'rgba(42,58,82,.3)'}},y:{ticks:{color:'#8899aa',font:{size:10,family:'Prompt'}},grid:{color:'rgba(42,58,82,.3)'}}}}});
+    });
+  },100);
+}
+
+// ============================================================
+// MODAL: Edit KPI
+// ============================================================
+let modalMode = null;
+let modalTarget = null;
+
+function openEditHA(partId, sectionId, indId) {
+  const d = getData();
+  let section, ind;
+  if(partId==='ha-part1') { section=d.haKPI.part1.sections.find(s=>s.id===sectionId); }
+  else if(partId==='ha-part2') { section=d.haKPI.part2.sections.find(s=>s.id===sectionId); }
+  else { section=d.haKPI.part4.sections.find(s=>s.id===sectionId); }
+  ind = section.indicators.find(i=>i.id===indId);
+  modalMode='ha'; modalTarget={partId,sectionId,indId};
+  document.getElementById('modalTitle').textContent='✏️ บันทึก/แก้ไข ตัวชี้วัด HA';
+  document.getElementById('modalBody').innerHTML=`
+    <div class="alert alert-info" style="margin-bottom:16px">📋 <span><strong>${ind.name}</strong></span></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">เป้าหมาย: ${ind.target} | ผู้รับผิดชอบ: ${ind.responsible}
+    ${ind.linkStrat?'<br><span class="link-badge">🔗 เชื่อมโยงกับ KPI ยุทธศาสตร์ – จะ Sync อัตโนมัติ</span>':''}</div>
+    <div class="row-2">
+    ${YEARS.map(y=>`
+      <div class="form-group">
+        <label>ปี ${y}</label>
+        <input type="text" id="haVal-${y}" value="${ind.values[y]||''}" placeholder="กรอกค่า / ไม่มีข้อมูล">
+      </div>`).join('')}
+    </div>
+    <div class="form-group">
+      <label>หมายเหตุ</label>
+      <input type="text" id="haNote" placeholder="หมายเหตุ (ถ้ามี)">
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openEditKPI(type, indId) {
+  const d = getData();
+  const allInd = d.strategicKPI.plans.flatMap(p=>p.projects.flatMap(pr=>pr.indicators));
+  const ind = allInd.find(i=>i.id===indId);
+  modalMode='strategic'; modalTarget={indId};
+  document.getElementById('modalTitle').textContent='✏️ บันทึก/แก้ไข KPI ยุทธศาสตร์';
+  document.getElementById('modalBody').innerHTML=`
+    <div class="alert alert-info" style="margin-bottom:16px">🎯 <span><strong>${ind.name}</strong></span></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">เป้าหมาย: ${ind.target}</div>
+    <div class="row-2">
+    ${YEARS.map(y=>`
+      <div class="form-group">
+        <label>ปี ${y}</label>
+        <input type="text" id="stratVal-${y}" value="${ind.values[y]||''}" placeholder="กรอกค่า">
+      </div>`).join('')}
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  modalMode=null; modalTarget=null;
+}
+
+function saveModalData() {
+  const d = getData();
+  if(modalMode==='ha') {
+    const {partId,sectionId,indId} = modalTarget;
+    let section;
+    if(partId==='ha-part1') section=d.haKPI.part1.sections.find(s=>s.id===sectionId);
+    else if(partId==='ha-part2') section=d.haKPI.part2.sections.find(s=>s.id===sectionId);
+    else section=d.haKPI.part4.sections.find(s=>s.id===sectionId);
+    const ind = section.indicators.find(i=>i.id===indId);
+    YEARS.forEach(y=>{ const v=document.getElementById('haVal-'+y).value.trim(); if(v!==undefined) ind.values[y]=v; });
+    // AUTO-SYNC to strategic
+    if(ind.linkStrat) {
+      const stratInd = d.strategicKPI.plans.flatMap(p=>p.projects.flatMap(pr=>pr.indicators)).find(i=>i.id===ind.linkStrat);
+      if(stratInd) { YEARS.forEach(y=>{ if(ind.values[y]) stratInd.values[y]=ind.values[y]; }); showToast('🔗 Sync KPI ยุทธศาสตร์ อัตโนมัติเรียบร้อย ✅'); }
+    }
+  } else if(modalMode==='strategic') {
+    const {indId} = modalTarget;
+    const ind = d.strategicKPI.plans.flatMap(p=>p.projects.flatMap(pr=>pr.indicators)).find(i=>i.id===indId);
+    YEARS.forEach(y=>{ const v=document.getElementById('stratVal-'+y).value.trim(); if(v!==undefined) ind.values[y]=v; });
+  }
+  d.lastUpdate = new Date().toISOString();
+  saveData(d);
+  closeModal();
+  if(!modalMode || modalMode==='ha') { renderHA_P1(); renderHA_P2(); renderHA_P4(); }
+  renderStrategicPage();
+  renderOverview();
+  showToast('💾 บันทึกข้อมูลเรียบร้อยแล้ว');
+}
+
+// ============================================================
+// ADMIN USERS
+// ============================================================
+function renderAdminUsers() {
+  if(currentUser && currentUser.role!=='superadmin') return;
+  const d = getData();
+  const el = document.getElementById('userList');
+  if(!el) return;
+  el.innerHTML = d.users.map(u=>`
+    <div class="user-row">
+      <div class="user-avatar">${u.name.slice(0,2)}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${u.name}</div>
+        <div style="font-size:11px;color:var(--muted)">@${u.username} · ${u.dept}</div>
+      </div>
+      <span class="role-badge role-${u.role}">${u.role==='superadmin'?'Super Admin':u.role==='admin'?'Admin':'User'}</span>
+      ${u.id!=='u1'?`<button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">🗑️</button>`:''}
+    </div>`).join('');
+}
+
+function openAddUser() {
+  modalMode='adduser'; modalTarget=null;
+  document.getElementById('modalTitle').textContent='➕ เพิ่มผู้ใช้งาน';
+  document.getElementById('modalBody').innerHTML=`
+    <div class="row-2">
+      <div class="form-group"><label>ชื่อ-นามสกุล</label><input type="text" id="nu-name" placeholder="ชื่อผู้ใช้งาน"></div>
+      <div class="form-group"><label>Username</label><input type="text" id="nu-user" placeholder="username"></div>
+    </div>
+    <div class="row-2">
+      <div class="form-group"><label>Password</label><input type="password" id="nu-pass" placeholder="รหัสผ่าน"></div>
+      <div class="form-group"><label>แผนก/หน่วยงาน</label><input type="text" id="nu-dept" placeholder="แผนก"></div>
+    </div>
+    <div class="form-group"><label>สิทธิ์การใช้งาน</label>
+      <select id="nu-role">
+        <option value="user">User – ดูได้อย่างเดียว</option>
+        <option value="admin">Admin – บันทึก/แก้ไขของตนเอง</option>
+        <option value="superadmin">Super Admin – เข้าถึงทั้งระบบ</option>
+      </select>
+    </div>
+    <div class="form-group"><label>สิทธิ์แก้ไขส่วนใด (สำหรับ Admin)</label>
+      <select id="nu-perm" multiple style="height:100px">
+        <option value="ha-part1">KPI HA Part 1</option>
+        <option value="ha-part2">KPI HA Part 2</option>
+        <option value="ha-part4">KPI HA Part 4</option>
+        <option value="strategic">KPI ยุทธศาสตร์</option>
+      </select>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function deleteUser(id) {
+  if(!confirm('ยืนยันการลบผู้ใช้งานนี้?')) return;
+  const d = getData();
+  d.users = d.users.filter(u=>u.id!==id);
+  saveData(d);
+  renderAdminUsers();
+  showToast('🗑️ ลบผู้ใช้งานเรียบร้อย');
+}
+
+// override saveModalData for adduser
+const _origSave = saveModalData;
+window.saveModalData = function() {
+  if(modalMode==='adduser') {
+    const d=getData();
+    const nm=document.getElementById('nu-name').value.trim();
+    const un=document.getElementById('nu-user').value.trim();
+    const pw=document.getElementById('nu-pass').value;
+    const dept=document.getElementById('nu-dept').value.trim();
+    const role=document.getElementById('nu-role').value;
+    const permEl=document.getElementById('nu-perm');
+    const perms=permEl?[...permEl.selectedOptions].map(o=>o.value):[];
+    if(!nm||!un||!pw){showToast('❌ กรุณากรอกข้อมูลให้ครบ');return;}
+    d.users.push({id:'u'+Date.now(),username:un,password:pw,name:nm,role,dept,canEdit:perms});
+    saveData(d);
+    renderAdminUsers();
+    closeModal();
+    showToast('✅ เพิ่มผู้ใช้งานเรียบร้อย');
+    return;
+  }
+  _origSave();
+};
+
+function saveSetting(key, val) {
+  const d=getData();
+  d.settings[key]=val;
+  saveData(d);
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, type='success') {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=type==='error'?'var(--danger)':type==='warn'?'var(--warning)':'var(--success)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('lastUpdate').textContent=new Date().toLocaleString('th-TH');
+document.getElementById('currentYear').textContent=activeYear;
+</script>
+</body>
+</html>
