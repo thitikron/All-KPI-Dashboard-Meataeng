@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="auto">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard KPI โรงพยาบาลแม่แตง</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--f:'Sarabun',sans-serif;--sw:272px;--th:58px;--r:12px;--rs:8px;--tr:.2s ease}
+[data-theme="dark"]{
+  --bg:#0c1220;--bg2:#111827;--sb:#0f1825;--cd:#182031;--cd2:#1e2940;
+  --bd:#283548;--bd2:#334155;
+  --tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;
+  --ac:#38bdf8;--ac2:#0ea5e9;--acb:rgba(56,189,248,.12);
+  --ok:#10b981;--okb:rgba(16,185,129,.12);
+  --wn:#f59e0b;--wnb:rgba(245,158,11,.12);
+  --er:#ef4444;--erb:rgba(239,68,68,.12);
+  --pu:#8b5cf6;--pub:rgba(139,92,246,.12);
+  --te:#14b8a6;
+  --sh:0 8px 32px rgba(0,0,0,.5);--shs:0 2px 8px rgba(0,0,0,.3);
+}
+[data-theme="light"]{
+  --bg:#f0f4f8;--bg2:#e4eaf2;--sb:#fff;--cd:#fff;--cd2:#f5f8fb;
+  --bd:#dde3ec;--bd2:#c8d0dc;
+  --tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;
+  --ac:#0369a1;--ac2:#0284c7;--acb:rgba(3,105,161,.09);
+  --ok:#059669;--okb:rgba(5,150,105,.09);
+  --wn:#d97706;--wnb:rgba(217,119,6,.09);
+  --er:#dc2626;--erb:rgba(220,38,38,.09);
+  --pu:#7c3aed;--pub:rgba(124,58,237,.09);
+  --te:#0d9488;
+  --sh:0 8px 32px rgba(0,0,0,.08);--shs:0 2px 8px rgba(0,0,0,.05);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--f);background:var(--bg);color:var(--tx);min-height:100vh;font-size:15px;line-height:1.6;transition:background var(--tr),color var(--tr)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+
+/* ── SIDEBAR ── */
+#sb{position:fixed;top:0;left:0;width:var(--sw);height:100vh;background:var(--sb);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;z-index:100;box-shadow:var(--shs);transition:transform .28s ease,background var(--tr)}
+.sb-hd{padding:13px 14px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--sb);z-index:1}
+.sb-hd .title1{font-size:15px;font-weight:700;color:var(--tx)}
+.sb-hd .title2{font-size:12px;color:var(--tx3);margin-top:1px}
+.ng{padding:8px 8px 0}
+.nl{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-weight:600;padding:8px 8px 4px}
+.ni{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:var(--rs);color:var(--tx2);margin-bottom:1px;cursor:pointer;transition:all var(--tr);position:relative;user-select:none}
+.ni:hover{background:var(--cd2);color:var(--tx)}
+.ni.active{background:var(--acb);color:var(--ac);font-weight:600}
+.ni.active::before{content:'';position:absolute;left:0;top:22%;height:56%;width:3px;background:var(--ac);border-radius:0 3px 3px 0}
+.ni-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.ni-txt{font-size:13.5px;flex:1}
+.ni-bdg{font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:10px;background:var(--acb);color:var(--ac)}
+.ni-arr{font-size:12px;color:var(--tx3);transition:transform .25s;margin-left:auto;flex-shrink:0}
+.ni.go .ni-arr{transform:rotate(90deg)}
+/* L2 ยุทธ */
+.ns2{overflow:hidden;max-height:0;transition:max-height .3s;padding-left:10px}
+.ns2.open{max-height:1000px}
+.ni2{display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:var(--rs);color:var(--tx3);font-size:13px;cursor:pointer;transition:all var(--tr);margin-bottom:1px;font-weight:500}
+.ni2:hover{background:var(--cd2);color:var(--tx)}
+.ni2.go2 .ni-arr{transform:rotate(90deg)}
+/* L3 แผนงาน */
+.ns3{overflow:hidden;max-height:0;transition:max-height .3s;padding-left:16px}
+.ns3.open{max-height:1000px}
+.ni3{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:var(--rs);color:var(--tx3);font-size:12.5px;cursor:pointer;transition:all var(--tr);margin-bottom:1px}
+.ni3:hover{background:var(--cd2);color:var(--tx)}
+.ni3.active{color:var(--ac);font-weight:600;background:var(--acb)}
+.sb-ft{margin-top:auto;padding:11px 14px;border-top:1px solid var(--bd);font-size:12px;color:var(--tx3)}
+
+/* ── TOPBAR ── */
+#tb{position:fixed;top:0;left:var(--sw);right:0;height:var(--th);background:var(--sb);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:90;box-shadow:var(--shs);transition:left .28s ease,background var(--tr)}
+.tb-l{display:flex;align-items:center;gap:10px}
+.hmb{display:none;background:none;border:none;color:var(--tx2);font-size:20px;padding:4px;cursor:pointer}
+.tb-ttl{font-size:16px;font-weight:700}
+.tb-r{display:flex;align-items:center;gap:7px}
+.tsw{display:flex;background:var(--cd2);border:1px solid var(--bd);border-radius:20px;padding:3px 4px;gap:2px}
+.tbtn{border:none;background:none;padding:4px 9px;border-radius:16px;font-size:12px;color:var(--tx3);transition:all var(--tr);cursor:pointer}
+.tbtn.active{background:var(--ac2);color:#fff}
+.uc{display:flex;align-items:center;gap:8px;background:var(--cd2);border:1px solid var(--bd);border-radius:20px;padding:4px 12px 4px 5px}
+.uav{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--ac2),var(--pu));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.unm{font-size:12px;font-weight:600;line-height:1}
+.rbdg{font-size:10px;padding:1px 7px;border-radius:10px;font-weight:600;display:inline-block}
+.r-sa{background:var(--pub);color:var(--pu)}
+.r-ad{background:var(--acb);color:var(--ac)}
+.r-us{background:var(--okb);color:var(--ok)}
+.btn-li{display:flex;align-items:center;gap:6px;background:var(--ac2);color:#fff;border:none;border-radius:var(--rs);padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity var(--tr)}
+.btn-li:hover{opacity:.88}
+.btn-lo{background:none;border:1px solid var(--bd);color:var(--tx2);border-radius:var(--rs);padding:5px 11px;font-size:12px;cursor:pointer;transition:all var(--tr)}
+.btn-lo:hover{border-color:var(--er);color:var(--er)}
+
+/* ── MAIN ── */
+#mn{margin-left:var(--sw);padding-top:var(--th);min-height:100vh;transition:margin-left .28s ease}
+.pg{display:none;padding:20px;animation:fup .2s ease}
+.pg.active{display:block}
+@keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── OVERVIEW BANNER ── */
+.ov-banner{
+  background:linear-gradient(135deg,var(--ac2) 0%,var(--pu) 60%,var(--te) 100%);
+  border-radius:var(--r);padding:22px 24px;margin-bottom:20px;
+  display:flex;align-items:center;gap:18px;
+  position:relative;overflow:hidden;
+}
+.ov-banner::before{content:'';position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="80" cy="20" r="40" fill="white" fill-opacity=".05"/><circle cx="10" cy="80" r="30" fill="white" fill-opacity=".04"/></svg>') no-repeat center/cover}
+.ov-banner-img{width:72px;height:72px;border-radius:14px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;position:relative;z-index:1}
+.ov-banner-img img{width:66px;height:66px;object-fit:contain}
+.ov-banner-info{position:relative;z-index:1}
+.ov-banner-info h1{font-size:20px;font-weight:700;color:#fff;line-height:1.2}
+.ov-banner-info p{font-size:12px;color:rgba(255,255,255,.8);margin-top:3px}
+
+/* ── STAT CARDS ── */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:13px;margin-bottom:18px}
+.sc{background:var(--cd);border:1px solid var(--bd);border-radius:var(--r);padding:17px 15px;position:relative;overflow:hidden;transition:transform var(--tr),box-shadow var(--tr)}
+.sc:hover{transform:translateY(-2px);box-shadow:var(--shs)}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc-b::after{background:linear-gradient(90deg,var(--ac),var(--te))}
+.sc-g::after{background:linear-gradient(90deg,var(--ok),#34d399)}
+.sc-r::after{background:linear-gradient(90deg,var(--er),#f87171)}
+.sc-y::after{background:linear-gradient(90deg,var(--wn),#fcd34d)}
+.sc-p::after{background:linear-gradient(90deg,var(--pu),#a78bfa)}
+.sc-lbl{font-size:12.5px;color:var(--tx2);margin-bottom:6px}
+.sc-val{font-size:30px;font-weight:700;line-height:1}
+.sc-sub{font-size:11.5px;color:var(--tx3);margin-top:5px}
+.sc-ico{position:absolute;right:13px;top:13px;font-size:26px;opacity:.12}
+
+/* ── CARD ── */
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:12px;transition:background var(--tr)}
+.ch{padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px}
+.cico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ch h3{font-size:15px;font-weight:600;flex:1}
+.ch-meta{font-size:12px;color:var(--tx3);display:flex;gap:8px;flex-wrap:wrap}
+.cb{padding:14px 15px}
+.cb.nb{padding:0}
+/* accordion */
+.card.acc .ch{cursor:pointer}
+.card.acc .cb{display:none}
+.card.acc.open .cb{display:block}
+.c-arr{color:var(--tx3);transition:transform .25s;margin-left:auto;font-size:15px}
+.card.open .c-arr{transform:rotate(90deg)}
+
+/* ── CHARTS GRID ── */
+.cg2{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:16px}
+.cg5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.cg4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.cwrap{background:var(--cd);border:1px solid var(--bd);border-radius:var(--r);padding:15px}
+.cwrap h4{font-size:12.5px;font-weight:600;color:var(--tx2);margin-bottom:10px}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:var(--cd2);padding:10px 11px;text-align:left;color:var(--tx2);font-weight:600;border-bottom:1px solid var(--bd);white-space:nowrap;font-size:12.5px}
+thead th.q-head{background:var(--acb);color:var(--ac);text-align:center}
+thead th.m-head{text-align:center;font-size:12px}
+tbody td{padding:9px 11px;border-bottom:1px solid var(--bd);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--cd2)}
+td.m-cell{text-align:center;font-size:13px;min-width:62px}
+td.val-ok{color:var(--ok);font-weight:600}
+td.val-er{color:var(--er);font-weight:600}
+
+/* ── QUARTER TABS ── */
+.qtabs{display:flex;gap:5px;margin-bottom:13px;flex-wrap:wrap}
+.qtab{padding:5px 14px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:500;border:1px solid var(--bd);color:var(--tx3);transition:all var(--tr)}
+.qtab.active{background:var(--ac2);color:#fff;border-color:var(--ac2)}
+.qtab:hover:not(.active){border-color:var(--ac);color:var(--ac)}
+.ytabs{display:flex;gap:5px;margin-bottom:13px;flex-wrap:wrap}
+.ytab{padding:5px 13px;border-radius:16px;cursor:pointer;font-size:12px;font-weight:500;border:1px solid var(--bd);color:var(--tx3);transition:all var(--tr)}
+.ytab.active{background:#6d28d9;color:#fff;border-color:#6d28d9}
+.ytab:hover:not(.active){border-color:var(--pu);color:var(--pu)}
+
+/* ── PART TABS ── */
+.ptabs{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--bd);margin-bottom:15px}
+.ptab{padding:8px 15px;font-size:12.5px;font-weight:500;color:var(--tx3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--tr)}
+.ptab:hover{color:var(--tx)}
+.ptab.active{color:var(--ac);border-bottom-color:var(--ac)}
+
+/* ── STATUS CHIPS ── */
+.chip{display:inline-flex;align-items:center;gap:3px;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.cp-ok{background:var(--okb);color:var(--ok)}
+.cp-er{background:var(--erb);color:var(--er)}
+.cp-wn{background:var(--wnb);color:var(--wn)}
+.cp-na{background:var(--cd2);color:var(--tx3)}
+.cp-ha{background:var(--pub);color:var(--pu)}
+.cp-st{background:var(--acb);color:var(--ac)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:var(--rs);padding:7px 13px;font-family:var(--f);font-size:12.5px;font-weight:500;transition:all var(--tr);cursor:pointer}
+.btn-p{background:var(--ac2);color:#fff}
+.btn-p:hover{background:var(--ac)}
+.btn-o{background:none;border:1px solid var(--bd);color:var(--tx)}
+.btn-o:hover{border-color:var(--ac);color:var(--ac)}
+.btn-ok{background:var(--okb);color:var(--ok)}
+.btn-er{background:var(--erb);color:var(--er)}
+.btn-sm{padding:4px 10px;font-size:11.5px}
+.btn-xs{padding:3px 8px;font-size:11px}
+
+/* ── SEARCH ── */
+.sbox{position:relative;margin-bottom:13px}
+.sbox input{width:100%;background:var(--cd);border:1px solid var(--bd);border-radius:var(--rs);padding:8px 13px 8px 34px;color:var(--tx);font-family:var(--f);font-size:13px;outline:none;transition:border var(--tr)}
+.sbox input:focus{border-color:var(--ac)}
+.sico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:13px}
+
+/* ── ALERTS ── */
+.alert{padding:10px 14px;border-radius:var(--rs);font-size:13px;margin-bottom:11px;display:flex;gap:7px;align-items:flex-start}
+.al-i{background:var(--acb);border:1px solid rgba(56,189,248,.2);color:var(--ac)}
+.al-w{background:var(--wnb);border:1px solid rgba(245,158,11,.2);color:var(--wn)}
+.al-ok{background:var(--okb);border:1px solid rgba(16,185,129,.2);color:var(--ok)}
+.al-e{background:var(--erb);border:1px solid rgba(239,68,68,.2);color:var(--er)}
+
+/* ── MODAL ── */
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#ov.open{display:flex}
+.modal{background:var(--cd);border:1px solid var(--bd);border-radius:16px;width:600px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:var(--sh);animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(-10px)}to{opacity:1;transform:scale(1)translateY(0)}}
+.mhd{padding:16px 20px 13px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--cd);z-index:1}
+.mhd h3{font-size:15px;font-weight:700}
+.mx{background:none;border:none;color:var(--tx3);font-size:21px;line-height:1;cursor:pointer;transition:color var(--tr)}
+.mx:hover{color:var(--er)}
+.mbd{padding:18px 20px}
+.mft{padding:13px 20px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--cd)}
+
+/* ── FORM ── */
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11.5px;color:var(--tx2);margin-bottom:4px;font-weight:500}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--cd2);border:1px solid var(--bd);border-radius:var(--rs);padding:8px 11px;color:var(--tx);font-family:var(--f);font-size:13px;outline:none;transition:border var(--tr)}
+.fg input:focus,.fg select:focus{border-color:var(--ac)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.r3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.r4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+
+/* ── QUARTER FORM GROUP ── */
+.qfg{border:1px solid var(--bd);border-radius:var(--rs);padding:12px;margin-bottom:10px}
+.qfg-hd{font-size:12px;font-weight:600;color:var(--ac);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+
+/* ── WATCH LIST ── */
+.wr{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.wr:last-child{border-bottom:none}
+.wdot{width:26px;height:26px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+
+/* ── PAGE HEADER ── */
+.ph{margin-bottom:18px}
+.ph h2{font-size:20px;font-weight:700}
+.ph p{color:var(--tx2);font-size:12.5px;margin-top:3px}
+.ph .ph-crumb{font-size:11px;color:var(--tx3);margin-bottom:4px}
+
+/* ── PROGRESS BAR ── */
+.pbar{height:4px;background:var(--cd2);border-radius:3px;overflow:hidden;margin-top:7px}
+.pbf{height:100%;border-radius:3px;transition:width .7s ease}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:22px;right:22px;padding:10px 17px;border-radius:9px;font-size:13px;font-weight:500;z-index:999;max-width:300px;pointer-events:none;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+#toast.show{transform:translateY(0);opacity:1}
+.t-ok{background:var(--ok);color:#fff}
+.t-er{background:var(--er);color:#fff}
+.t-i{background:var(--ac2);color:#fff}
+.t-w{background:var(--wn);color:#fff}
+
+/* ── MASK ── */
+#mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+#mask.open{display:block}
+
+/* ── PLAN PAGE HEADER STRIPE ── */
+.plan-stripe{border-radius:var(--r);padding:14px 18px;margin-bottom:16px;border-left:4px solid}
+.plan-stripe h2{font-size:17px;font-weight:700}
+.plan-stripe .ps-sub{font-size:12px;opacity:.8;margin-top:2px}
+
+/* ── YEAR/STRAT BADGE ── */
+.ybadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 9px;border-radius:10px;font-weight:600;background:var(--pub);color:var(--pu);margin-left:6px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  :root{--sw:0px}
+  #sb{transform:translateX(-272px);width:272px}
+  #sb.open{transform:translateX(0)}
+  #tb,#mn{left:0;margin-left:0}
+  .hmb{display:block}
+  .cg2,.cg5,.cg4{grid-template-columns:1fr}
+  .sg{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:500px){
+  .sg{grid-template-columns:1fr}
+  .pg{padding:12px}
+  .r2,.r3,.r4{grid-template-columns:1fr}
+  .ui-wrap{display:none}
+  .modal{width:100%;border-radius:16px 16px 0 0;position:absolute;bottom:0;max-height:88vh}
+  #ov.open{align-items:flex-end}
+}
+</style>
+</head>
+<body>
+
+<div id="mask" onclick="closeSb()"></div>
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<nav id="sb">
+  <div class="sb-hd">
+    <div class="title1">Dashboard KPI</div>
+    <div class="title2">โรงพยาบาลแม่แตง</div>
+  </div>
+
+  <div class="ng">
+    <div class="nl">หลัก</div>
+    <div class="ni active" onclick="goPage('overview')" data-p="overview">
+      <span class="ni-ico">📊</span><span class="ni-txt">ภาพรวม Dashboard</span>
+    </div>
+  </div>
+
+  <div class="ng">
+    <div class="nl">KPI ยุทธศาสตร์</div>
+    <!-- L1: parent toggle for all strategic -->
+    <div class="ni" id="niST" onclick="toggleL1('niST','nsST')">
+      <span class="ni-ico">🎯</span><span class="ni-txt">KPI ยุทธศาสตร์</span>
+      <span class="ni-bdg" id="stBdg">36</span>
+      <span class="ni-arr">›</span>
+    </div>
+    <div class="ns2" id="nsST">
+      <!-- ยุทธ 1 -->
+      <div class="ni2" id="ni-y1" onclick="toggleL2('ni-y1','ns-y1')">
+        <span style="font-size:11px">1⃣</span>
+        <span style="flex:1;font-size:11.5px">PP&P Excellence</span>
+        <span class="ni-arr">›</span>
+      </div>
+      <div class="ns3" id="ns-y1">
+        <div class="ni3" onclick="goStrat('y1','p1')" data-sp="y1-p1">แผนงานที่ 1</div>
+        <div class="ni3" onclick="goStrat('y1','p2')" data-sp="y1-p2">แผนงานที่ 2</div>
+        <div class="ni3" onclick="goStrat('y1','p3')" data-sp="y1-p3">แผนงานที่ 3</div>
+      </div>
+      <!-- ยุทธ 2 -->
+      <div class="ni2" id="ni-y2" onclick="toggleL2('ni-y2','ns-y2')">
+        <span style="font-size:11px">2⃣</span>
+        <span style="flex:1;font-size:11.5px">Service Excellence</span>
+        <span class="ni-arr">›</span>
+      </div>
+      <div class="ns3" id="ns-y2">
+        <div class="ni3" onclick="goStrat('y2','p4')" data-sp="y2-p4">แผนงานที่ 4</div>
+        <div class="ni3" onclick="goStrat('y2','p5')" data-sp="y2-p5">แผนงานที่ 5</div>
+        <div class="ni3" onclick="goStrat('y2','p6')" data-sp="y2-p6">แผนงานที่ 6</div>
+      </div>
+      <!-- ยุทธ 3 -->
+      <div class="ni2" id="ni-y3" onclick="toggleL2('ni-y3','ns-y3')">
+        <span style="font-size:11px">3⃣</span>
+        <span style="flex:1;font-size:11.5px">People Excellence</span>
+        <span class="ni-arr">›</span>
+      </div>
+      <div class="ns3" id="ns-y3">
+        <div class="ni3" onclick="goStrat('y3','p7')" data-sp="y3-p7">แผนงานที่ 7</div>
+        <div class="ni3" onclick="goStrat('y3','p8')" data-sp="y3-p8">แผนงานที่ 8</div>
+      </div>
+      <!-- ยุทธ 4 -->
+      <div class="ni2" id="ni-y4" onclick="toggleL2('ni-y4','ns-y4')">
+        <span style="font-size:11px">4⃣</span>
+        <span style="flex:1;font-size:11.5px">Governance Excellence</span>
+        <span class="ni-arr">›</span>
+      </div>
+      <div class="ns3" id="ns-y4">
+        <div class="ni3" onclick="goStrat('y4','p9')" data-sp="y4-p9">แผนงานที่ 9</div>
+        <div class="ni3" onclick="goStrat('y4','p10')" data-sp="y4-p10">แผนงานที่ 10</div>
+      </div>
+      <!-- ยุทธ 5 -->
+      <div class="ni2" id="ni-y5" onclick="toggleL2('ni-y5','ns-y5')">
+        <span style="font-size:11px">5⃣</span>
+        <span style="flex:1;font-size:11.5px">Finance & Digital</span>
+        <span class="ni-arr">›</span>
+      </div>
+      <div class="ns3" id="ns-y5">
+        <div class="ni3" onclick="goStrat('y5','p11')" data-sp="y5-p11">แผนงานที่ 11</div>
+        <div class="ni3" onclick="goStrat('y5','p12')" data-sp="y5-p12">แผนงานที่ 12</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ng">
+    <div class="nl">KPI HA (สรพ.)</div>
+    <div class="ni" id="ni-ha" onclick="toggleL1('ni-ha','ns-ha')">
+      <span class="ni-ico">🏆</span><span class="ni-txt">KPI HA</span><span class="ni-arr">›</span>
+    </div>
+    <div class="ns2" id="ns-ha">
+      <div class="ni3" onclick="goPage('ha1')" data-p="ha1">📌 Part 1 – ทีมนำ</div>
+      <div class="ni3" onclick="goPage('ha2')" data-p="ha2">⚙️ Part 2 – ระบบงานสำคัญ</div>
+      <div class="ni3" onclick="goPage('ha3')" data-p="ha3">🩺 Part 3 – PCT</div>
+      <div class="ni3" onclick="goPage('ha4')" data-p="ha4">📈 Part 4 – ผลลัพธ์</div>
+    </div>
+  </div>
+
+  <div class="ng" id="adminNav" style="display:none">
+    <div class="nl">จัดการระบบ</div>
+    <div class="ni" onclick="goPage('a-users')" data-p="a-users"><span class="ni-ico">👥</span><span class="ni-txt">ผู้ใช้งาน</span></div>
+    <div class="ni" onclick="goPage('a-logs')"  data-p="a-logs"> <span class="ni-ico">📜</span><span class="ni-txt">Log การใช้งาน</span></div>
+    <div class="ni" onclick="goPage('a-set')"   data-p="a-set">  <span class="ni-ico">⚙️</span><span class="ni-txt">ตั้งค่าระบบ</span></div>
+  </div>
+
+  <div class="sb-ft">
+    <div>ปีงบประมาณ: <b id="sbFY">2569</b></div>
+    <div id="sbVer" style="margin-top:2px">รพ.แม่แตง · V2.3</div>
+  </div>
+</nav>
+
+<!-- ══════════════ TOPBAR ══════════════ -->
+<div id="tb">
+  <div class="tb-l">
+    <button class="hmb" onclick="toggleSb()">☰</button>
+    <!-- โลโก้ รพ. แทน text -->
+    <img src="https://www.maetaeng.go.th/assets/3-DPQvDzlj.png"
+         alt="รพ.แม่แตง"
+         style="width:36px;height:36px;object-fit:contain;border-radius:8px;background:var(--acb);padding:3px;"
+         onerror="this.style.display='none'">
+    <span class="tb-ttl" id="tbTtl">ภาพรวม Dashboard</span>
+  </div>
+  <div class="tb-r">
+    <!-- Sync Status -->
+    <div id="syncBadge" style="display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;background:var(--cd2);border:1px solid var(--bd);border-radius:16px;cursor:default" title="สถานะ Google Sheets Sync">
+      <span id="syncDot">⚫</span>
+      <span id="syncTxt" style="color:var(--tx3)">Local Only</span>
+    </div>
+    <div class="tsw">
+      <button class="tbtn" data-t="dark"  onclick="setTheme('dark')">🌙</button>
+      <button class="tbtn" data-t="light" onclick="setTheme('light')">☀️</button>
+      <button class="tbtn active" data-t="auto" onclick="setTheme('auto')">🔄</button>
+    </div>
+    <div id="gArea"><button class="btn-li" onclick="openLogin()">🔐 เข้าสู่ระบบ</button></div>
+    <div id="uArea" style="display:none;align-items:center;gap:7px">
+      <div class="uc">
+        <div class="uav" id="uAv">-</div>
+        <div class="ui-wrap">
+          <div class="unm" id="uNm">-</div>
+          <span class="rbdg" id="uRl">-</span>
+        </div>
+      </div>
+      <button class="btn-lo" onclick="doLogout()">ออก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div id="mn">
+
+  <!-- ▸ OVERVIEW -->
+  <div class="pg active" id="pg-overview">
+    <div class="ov-banner">
+      <div class="ov-banner-img">
+        <img src="https://www.maetaeng.go.th/assets/3-DPQvDzlj.png" alt="รพ.แม่แตง"
+             onerror="this.parentElement.innerHTML='🏥'">
+      </div>
+      <div class="ov-banner-info">
+        <h1>Dashboard KPI โรงพยาบาลแม่แตง</h1>
+        <p id="ovSub">ปีงบประมาณ 2569 · อัปเดต: — · KPI ยุทธศาสตร์ 5 ด้าน | KPI HA 4 Part</p>
+      </div>
+    </div>
+
+    <div class="sg">
+      <div class="sc sc-b"><div class="sc-lbl">KPI ยุทธศาสตร์ทั้งหมด</div><div class="sc-val">36</div><div class="sc-sub">5 ยุทธ · 12 แผนงาน</div><div class="sc-ico">🎯</div></div>
+      <div class="sc sc-g"><div class="sc-lbl">ผ่านเป้าหมาย</div><div class="sc-val" id="ovPass" style="color:var(--ok)">–</div><div class="sc-sub">ตัวชี้วัดยุทธศาสตร์</div><div class="sc-ico">✅</div><div class="pbar"><div class="pbf" id="ovPP" style="background:var(--ok)"></div></div></div>
+      <div class="sc sc-r"><div class="sc-lbl">ไม่ผ่านเป้าหมาย</div><div class="sc-val" id="ovFail" style="color:var(--er)">–</div><div class="sc-sub">ตัวชี้วัดยุทธศาสตร์</div><div class="sc-ico">⚠️</div><div class="pbar"><div class="pbf" id="ovFP" style="background:var(--er)"></div></div></div>
+      <div class="sc sc-y"><div class="sc-lbl">รอบันทึกข้อมูล</div><div class="sc-val" id="ovPend" style="color:var(--wn)">–</div><div class="sc-sub">ตัวชี้วัดยุทธศาสตร์</div><div class="sc-ico">📝</div><div class="pbar"><div class="pbf" id="ovWP" style="background:var(--wn)"></div></div></div>
+      <div class="sc sc-p"><div class="sc-lbl">KPI HA ทั้งหมด</div><div class="sc-val" id="ovHA">–</div><div class="sc-sub">Part 1 + 2 + 4</div><div class="sc-ico">🏆</div></div>
+    </div>
+
+    <div class="cg2">
+      <div class="cwrap">
+        <h4>🎯 สถานะ KPI ยุทธศาสตร์ แยกตาม 5 ยุทธ (ปี <span id="cLbl1">2569</span>)</h4>
+        <canvas id="cDonut1" height="200"></canvas>
+      </div>
+      <div class="cwrap">
+        <h4>🏆 สถานะ KPI HA แยกตาม 4 Part (ปี <span id="cLbl2">2569</span>)</h4>
+        <canvas id="cDonut2" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="cg2">
+      <div class="card">
+        <div class="ch"><div class="cico" style="background:var(--erb)">⚠️</div><h3>KPI ยุทธศาสตร์ที่ต้องติดตาม</h3></div>
+        <div class="cb" id="wStrat" style="max-height:240px;overflow-y:auto"><div style="text-align:center;padding:18px;color:var(--tx3)">กำลังโหลด...</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="cico" style="background:var(--wnb)">📝</div><h3>HA KPI รอบันทึก ปี <span id="haPY">2569</span></h3></div>
+        <div class="cb" id="wHA" style="max-height:240px;overflow-y:auto"><div style="text-align:center;padding:18px;color:var(--tx3)">กำลังโหลด...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ▸ STRATEGIC PLAN (dynamic single page) -->
+  <div class="pg" id="pg-strat">
+    <div class="ph">
+      <div class="ph-crumb" id="sPlanCrumb">KPI ยุทธศาสตร์</div>
+      <h2 id="sPlanTitle">—</h2>
+      <p id="sPlanSub">—</p>
+    </div>
+    <div class="alert al-i">ℹ️ ตัวชี้วัดที่มี <span class="chip cp-ha">🔗 HA</span> — เมื่อบันทึก HA จะ Sync มายุทธศาสตร์อัตโนมัติ · <b>ต้อง Login เพื่อบันทึก/แก้ไข</b></div>
+    <div class="ytabs" id="sYTabs"></div>
+    <div class="qtabs" id="sQTabs"></div>
+    <div id="sPlanBody"></div>
+  </div>
+
+  <!-- ▸ HA PART 1 -->
+  <div class="pg" id="pg-ha1">
+    <div class="ph"><h2>📌 KPI HA — Part 1: ทีมนำ</h2><p>การนำ · กลยุทธ์ · ผู้ป่วย · การวัด · บุคลากร · การปฏิบัติการ</p></div>
+    <div class="alert al-w">⚡ บันทึก HA ที่เชื่อมยุทธศาสตร์ → Sync อัตโนมัติ · ต้อง Login เพื่อแก้ไข</div>
+    <div class="ptabs" id="p1Tabs"></div>
+    <div class="ytabs" id="p1YTabs"></div>
+    <div id="p1Con"></div>
+  </div>
+
+  <!-- ▸ HA PART 2 -->
+  <div class="pg" id="pg-ha2">
+    <div class="ph"><h2>⚙️ KPI HA — Part 2: ระบบงานสำคัญ</h2><p>RM · NSO · MSO · ENV · IC · IM · PTC · LAB · เฝ้าระวัง · ชุมชน</p></div>
+    <div class="alert al-w">⚡ บันทึก HA ที่เชื่อมยุทธศาสตร์ → Sync อัตโนมัติ · ต้อง Login เพื่อแก้ไข</div>
+    <div class="ptabs" id="p2Tabs"></div>
+    <div class="ytabs" id="p2YTabs"></div>
+    <div id="p2Con"></div>
+  </div>
+
+  <!-- ▸ HA PART 3 -->
+  <div class="pg" id="pg-ha3">
+    <div class="ph"><h2>🩺 KPI HA — Part 3: PCT / กลุ่มผู้ป่วย</h2></div>
+    <div class="alert al-i">📌 Part 3 อยู่ระหว่างรวบรวมจากทีม PCT — ติดต่อ IT เพื่อนำเข้าระบบ</div>
+    <div class="card"><div class="cb" style="text-align:center;padding:40px;color:var(--tx3)">🏗️ กำลังเตรียมข้อมูล Part 3</div></div>
+  </div>
+
+  <!-- ▸ HA PART 4 -->
+  <div class="pg" id="pg-ha4">
+    <div class="ph"><h2>📈 KPI HA — Part 4: ผลลัพธ์</h2><p>ผลลัพธ์ทางคลินิก · ความปลอดภัย · ประสิทธิภาพ</p></div>
+    <div class="alert al-w">⚡ บันทึก HA ที่เชื่อมยุทธศาสตร์ → Sync อัตโนมัติ · ต้อง Login เพื่อแก้ไข</div>
+    <div class="ptabs" id="p4Tabs"></div>
+    <div class="ytabs" id="p4YTabs"></div>
+    <div id="p4Con"></div>
+  </div>
+
+  <!-- ▸ ADMIN USERS -->
+  <div class="pg" id="pg-a-users">
+    <div class="ph"><h2>👥 จัดการผู้ใช้งาน</h2></div>
+    <div id="userWrap"></div>
+  </div>
+
+  <!-- ▸ ADMIN LOGS -->
+  <div class="pg" id="pg-a-logs">
+    <div class="ph"><h2>📜 Log การใช้งานระบบ</h2><p>Login · บันทึกข้อมูล · แก้ไข · ระบบ</p></div>
+    <div style="display:flex;gap:7px;margin-bottom:11px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-p btn-sm" onclick="renderLogs()">🔄 รีเฟรช</button>
+      <select id="logLvl" onchange="renderLogs()" style="background:var(--cd);border:1px solid var(--bd);border-radius:var(--rs);padding:6px 10px;color:var(--tx);font-family:var(--f);font-size:12.5px">
+        <option value="">ทุก Level</option><option value="info">Info</option>
+        <option value="success">Success</option><option value="warn">Warn</option><option value="danger">Danger</option>
+      </select>
+      <div class="sbox" style="margin:0;flex:1;min-width:160px"><span class="sico">🔍</span><input id="logQ" type="text" placeholder="ค้นหา..." oninput="renderLogs()"></div>
+      <button class="btn btn-er btn-sm" onclick="clearLogs()">🗑️ ล้าง Log</button>
+    </div>
+    <div class="card"><div class="cb nb"><div class="tw"><table>
+      <thead><tr><th>เวลา</th><th>ผู้ใช้</th><th>Role</th><th>การดำเนินการ</th><th>รายละเอียด</th><th>Level</th></tr></thead>
+      <tbody id="logBody"><tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:18px">กด "รีเฟรช"</td></tr></tbody>
+    </table></div></div></div>
+  </div>
+
+  <!-- ▸ ADMIN SETTINGS -->
+  <div class="pg" id="pg-a-set">
+    <div class="ph"><h2>⚙️ ตั้งค่าระบบ</h2></div>
+
+    <!-- General -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ch"><div class="cico" style="background:var(--acb)">⚙️</div><h3>ทั่วไป</h3></div>
+      <div class="cb"><div class="r2">
+        <div class="fg"><label>ปีงบประมาณปัจจุบัน</label>
+          <select id="setFY"><option>2568</option><option selected>2569</option><option>2570</option></select></div>
+        <div class="fg"><label>ชื่อโรงพยาบาล</label><input type="text" id="setHosp" value="โรงพยาบาลแม่แตง"></div>
+      </div>
+      <button class="btn btn-p" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
+      </div>
+    </div>
+
+    <!-- Google Sheets -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ch">
+        <div class="cico" style="background:rgba(52,211,153,.15)">📊</div>
+        <h3>Google Sheets Sync</h3>
+        <div id="syncBadge2" style="margin-left:auto;display:flex;align-items:center;gap:5px;font-size:12px">
+          <span id="syncDot2">⚫</span><span id="syncTxt2" style="color:var(--tx3)">Local Only</span>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="alert al-i" style="margin-bottom:14px">
+          ℹ️ เมื่อตั้งค่า URL แล้ว การบันทึกข้อมูลทุกครั้งจะ Sync ไปยัง Google Sheets อัตโนมัติ
+          พร้อม Auto Sync HA → ยุทธศาสตร์ ใน Google Sheets ด้วย
+        </div>
+
+        <div class="fg">
+          <label>Google Apps Script Web App URL</label>
+          <input type="text" id="setGSUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                 value="" style="font-size:12px">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-p btn-sm" onclick="testGSConnection()">🔌 ทดสอบการเชื่อมต่อ</button>
+          <button class="btn btn-ok btn-sm" onclick="triggerSetup()">🔧 Setup Google Sheets (ครั้งแรก)</button>
+          <button class="btn btn-er btn-sm" onclick="clearGSUrl()">✕ ล้าง URL</button>
+        </div>
+
+        <div style="margin-top:16px;padding:14px;background:var(--cd2);border-radius:10px;border:1px solid var(--bd)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px">📋 วิธีตั้งค่า Google Apps Script (ทำครั้งเดียว)</div>
+          <ol style="font-size:12.5px;color:var(--tx2);line-height:2;padding-left:18px">
+            <li>สร้าง Google Sheet ใหม่ → คัดลอก Spreadsheet ID จาก URL</li>
+            <li>เปิด <a href="https://script.google.com" target="_blank" style="color:var(--ac)">script.google.com</a> → New Project</li>
+            <li>วาง Code จากไฟล์ <b>Code.gs</b> ที่ดาวน์โหลดมา</li>
+            <li>แก้ <code style="background:var(--cd);padding:1px 5px;border-radius:4px">SPREADSHEET_ID</code> ในไฟล์</li>
+            <li>Deploy → New Deployment → Web App → Execute as: <b>Me</b> → Who has access: <b>Anyone</b></li>
+            <li>Copy URL มาวางในช่องด้านบน → กด "ทดสอบการเชื่อมต่อ"</li>
+            <li>กด "Setup Google Sheets" เพื่อสร้าง Sheets อัตโนมัติ</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sync Now -->
+    <div class="card">
+      <div class="ch"><div class="cico" style="background:var(--pub)">🔄</div><h3>Sync ข้อมูลทั้งหมดตอนนี้</h3></div>
+      <div class="cb">
+        <p style="color:var(--tx2);font-size:13px;margin-bottom:14px">Push ข้อมูลทั้งหมดที่มีใน Local Storage ไปยัง Google Sheets ในครั้งเดียว</p>
+        <button class="btn btn-p" onclick="syncAllToGS()">☁️ Sync ข้อมูลทั้งหมดไปยัง Google Sheets</button>
+        <div id="syncProgress" style="margin-top:12px;font-size:12.5px;color:var(--tx3)"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /mn -->
+
+<!-- ══════════════ MODAL ══════════════ -->
+<div id="ov">
+  <div class="modal" id="mBox">
+    <div class="mhd"><h3 id="mTtl">—</h3><button class="mx" onclick="closeModal()">✕</button></div>
+    <div class="mbd" id="mBd"></div>
+    <div class="mft" id="mFt">
+      <button class="btn btn-o" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-p" id="mSave" onclick="modalSave()">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ===== HELPERS ===== */
+const el = id => document.getElementById(id);
+const setText = (id,v) => { const e=el(id); if(e) e.textContent=v; };
+let _tTmr;
+function toast(msg,cls='t-ok'){
+  const t=el('toast'); t.textContent=msg; t.className=cls;
+  t.classList.add('show'); clearTimeout(_tTmr);
+  _tTmr=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+/* ===== CONSTANTS ===== */
+const FYS=['2568','2569','2570'];
+const AY_KEY='mt_fy', DATA_KEY='mt_data_v3', USERS_KEY='mt_users_v3';
+const LOG_KEY='mt_log_v3', VER_KEY='mt_ver', THEME_KEY='mt_theme', GS_URL_KEY='mt_gs_url';
+let AY=localStorage.getItem(AY_KEY)||'2569', CU=null, GS_URL=localStorage.getItem(GS_URL_KEY)||'';
+let AQ=0, _sYid='y1', _sPid='p1', p1A='1-1', p2A='RM', p4A='4-1';
+
+function fyMonths(fy){
+  const y=parseInt(fy),p=y-1,s=n=>String(n).slice(2);
+  return ['ต.ค.'+s(p),'พ.ย.'+s(p),'ธ.ค.'+s(p),
+          'ม.ค.'+s(y),'ก.พ.'+s(y),'มี.ค.'+s(y),
+          'เม.ย.'+s(y),'พ.ค.'+s(y),'มิ.ย.'+s(y),
+          'ก.ค.'+s(y),'ส.ค.'+s(y),'ก.ย.'+s(y)];
+}
+const QNM=['ไตรมาส 1','ไตรมาส 2','ไตรมาส 3','ไตรมาส 4'];
+function emptyVals(){const o={};FYS.forEach(fy=>{o[fy]=Array(12).fill('');});return o;}
+
+/* ===== VERSION ===== */
+function getVer(){return parseFloat(localStorage.getItem(VER_KEY)||'2.3');}
+function bumpVer(){
+  const v=Math.round((getVer()+0.1)*10)/10;
+  localStorage.setItem(VER_KEY,v);
+  const sb=el('sbVer'); if(sb) sb.textContent='รพ.แม่แตง · V'+v.toFixed(1);
+  return v;
+}
+function initVer(){const v=getVer();const sb=el('sbVer');if(sb)sb.textContent='รพ.แม่แตง · V'+v.toFixed(1);}
+
+/* ===== SYNC STATUS ===== */
+let _syncStatus='local';
+function setSyncStatus(s,msg){
+  _syncStatus=s;
+  const map={local:['⚫','Local Only','#64748b'],syncing:['🟡','กำลัง Sync...','#f59e0b'],synced:['🟢','Synced','#10b981'],error:['🔴','Sync Error','#ef4444']};
+  const [ico,label,color]=map[s]||map.local;
+  const text=msg||label;
+  ['syncDot','syncDot2'].forEach(id=>{const d=el(id);if(d)d.textContent=ico;});
+  ['syncTxt','syncTxt2'].forEach(id=>{const t=el(id);if(t){t.textContent=text;t.style.color=color;}});
+}
+
+/* ===== GOOGLE SHEETS ===== */
+async function gsPost(payload){
+  if(!GS_URL)return null;
+  setSyncStatus('syncing');
+  try{
+    const res=await fetch(GS_URL,{method:'POST',body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(data.ok)setSyncStatus('synced'); else setSyncStatus('error',data.msg);
+    return data;
+  }catch(e){setSyncStatus('error','Network Error');return null;}
+}
+async function gsPing(){if(!GS_URL){setSyncStatus('local');return false;}const r=await gsPost({action:'ping'});return r?.ok===true;}
+async function gsLoginUser(u,p){if(!GS_URL)return null;return gsPost({action:'login',username:u,password:p});}
+async function gsSaveKPI(kpiType,indicator,values,section){
+  if(!GS_URL||!CU)return null;
+  return gsPost({action:'saveKPI',token:{name:CU.name,role:CU.role,username:CU.username},
+    kpiType,indicatorId:indicator.id,indicatorName:indicator.name,
+    sectionId:section?.id||'',target:indicator.target||'',values,
+    haLink:indicator.linkStrat||indicator.haLink||null,unit:indicator.unit||'',
+    responsible:indicator.responsible||'',focal:indicator.focal||'',report:indicator.report||''});
+}
+async function testGSConnection(){
+  const url=(el('setGSUrl')||{}).value?.trim();
+  if(!url){toast('กรุณากรอก URL ก่อน','t-w');return;}
+  GS_URL=url; toast('กำลังทดสอบ...','t-i');
+  const ok=await gsPing();
+  if(ok){localStorage.setItem(GS_URL_KEY,url);toast('เชื่อมต่อ Google Sheets สำเร็จ!','t-ok');setSyncStatus('synced','เชื่อมต่อแล้ว');}
+  else{toast('เชื่อมต่อไม่ได้ ตรวจสอบ URL','t-er');setSyncStatus('error');}
+}
+async function triggerSetup(){
+  const url=(el('setGSUrl')||{}).value?.trim();
+  if(!url){toast('กรุณากรอก URL ก่อน','t-w');return;}
+  toast('กำลัง Setup...','t-i');
+  try{const r=await fetch(url+'?setup=1');const d=await r.json();toast(d.ok?'Setup Sheets สำเร็จ!':'Setup อาจสำเร็จแล้ว ลองรีเฟรช',d.ok?'t-ok':'t-w');}
+  catch(e){toast('Setup ล้มเหลว: '+e.message,'t-er');}
+}
+function clearGSUrl(){GS_URL='';localStorage.removeItem(GS_URL_KEY);const f=el('setGSUrl');if(f)f.value='';setSyncStatus('local');toast('ล้าง URL แล้ว','t-i');}
+async function syncAllToGS(){
+  if(!GS_URL){toast('กรุณาตั้งค่า URL ก่อน','t-w');return;}
+  if(!CU){toast('กรุณา Login ก่อน','t-w');return;}
+  const prog=el('syncProgress'); if(prog)prog.textContent='กำลัง Sync...';
+  const d=getData(); let count=0,errors=0;
+  const haMap=[{secs:d.ha.part1.sections,type:'ha1'},{secs:d.ha.part2.sections,type:'ha2'},{secs:d.ha.part4.sections,type:'ha4'}];
+  for(const {secs,type} of haMap) for(const sec of secs) for(const ind of sec.indicators){const r=await gsSaveKPI(type,ind,ind.values,sec);if(r?.ok)count++;else errors++;}
+  for(const y of d.strategic) for(const p of y.plans) for(const ind of p.indicators){const r=await gsSaveKPI('strategic',ind,ind.values,null);if(r?.ok)count++;else errors++;}
+  const msg='Sync สำเร็จ '+count+' รายการ'+(errors>0?' | ล้มเหลว '+errors+' รายการ':'');
+  if(prog)prog.textContent=msg; toast(msg,errors>0?'t-w':'t-ok');
+  wLog('Sync ทั้งหมดไป GS',count+' รายการ',errors>0?'warn':'success');
+}
+
+/* ===== LOG ===== */
+function wLog(action,detail='',level='info'){
+  const logs=JSON.parse(localStorage.getItem(LOG_KEY)||'[]');
+  logs.unshift({ts:new Date().toLocaleString('th-TH'),user:CU?.name||'ผู้เยี่ยมชม',role:CU?.role||'guest',action,detail,level});
+  if(logs.length>1000)logs.length=1000;
+  localStorage.setItem(LOG_KEY,JSON.stringify(logs));
+}
+function renderLogs(){
+  const logs=JSON.parse(localStorage.getItem(LOG_KEY)||'[]');
+  const lvl=el('logLvl')?.value||'',q=(el('logQ')?.value||'').toLowerCase();
+  const f=logs.filter(l=>(!lvl||l.level===lvl)&&(!q||JSON.stringify(l).toLowerCase().includes(q)));
+  const cls=l=>l.level==='success'?'cp-ok':l.level==='danger'?'cp-er':l.level==='warn'?'cp-wn':'cp-na';
+  el('logBody').innerHTML=f.length?f.map(l=>`<tr><td style="white-space:nowrap;font-size:11px;color:var(--tx3)">${l.ts}</td><td style="font-weight:500">${l.user}</td><td><span class="rbdg r-${l.role==='superadmin'?'sa':l.role==='admin'?'ad':'us'}">${l.role}</span></td><td>${l.action}</td><td style="color:var(--tx3);font-size:11.5px">${l.detail||'—'}</td><td><span class="chip ${cls(l)}">${l.level}</span></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:18px">ไม่พบ Log</td></tr>';
+}
+function clearLogs(){if(!confirm('ล้าง Log ทั้งหมด?'))return;localStorage.removeItem(LOG_KEY);renderLogs();toast('ล้าง Log แล้ว','t-i');}
+
+/* ===== THEME ===== */
+let _th=localStorage.getItem(THEME_KEY)||'auto';
+function applyTheme(t){const hr=new Date().getHours();const res=t==='auto'?(hr>=6&&hr<18?'light':'dark'):t;document.documentElement.setAttribute('data-theme',res);document.querySelectorAll('.tbtn').forEach(b=>b.classList.toggle('active',b.dataset.t===t));}
+function setTheme(t){_th=t;localStorage.setItem(THEME_KEY,t);applyTheme(t);wLog('เปลี่ยนธีม',t,'info');}
+applyTheme(_th);
+setInterval(()=>{if(_th==='auto')applyTheme('auto');},300000);
+
+/* ===== AUTH ===== */
+function defUsers(){return[{id:'u1',username:'superadmin',password:'Admin@1234',name:'Super Administrator',role:'superadmin',dept:'IT',canEdit:[]},{id:'u2',username:'hn.admin',password:'HN@2568',name:'เจ้าหน้าที่ HA ทีมนำ',role:'admin',dept:'HA-P1',canEdit:['ha1']},{id:'u3',username:'rm.admin',password:'RM@2568',name:'เจ้าหน้าที่ RM',role:'admin',dept:'HA-P2',canEdit:['ha2']},{id:'u4',username:'strategy.admin',password:'ST@2568',name:'เจ้าหน้าที่ยุทธศาสตร์',role:'admin',dept:'Strategic',canEdit:['strat']},{id:'u5',username:'viewer',password:'View@123',name:'ผู้สังเกตการณ์',role:'user',dept:'-',canEdit:[]}];}
+function getUsers(){const r=localStorage.getItem(USERS_KEY);if(r)return JSON.parse(r);const d=defUsers();localStorage.setItem(USERS_KEY,JSON.stringify(d));return d;}
+function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
+function canEdit(sec){if(!CU)return false;if(CU.role==='superadmin')return true;if(CU.role==='admin')return(CU.canEdit||[]).some(x=>sec.includes(x)||x.includes(sec));return false;}
+function setUser(u){CU=u;el('gArea').style.display='none';el('uArea').style.display='flex';el('uAv').textContent=u.name.slice(0,2);el('uNm').textContent=u.name;const rb=el('uRl');rb.textContent=u.role==='superadmin'?'Super Admin':u.role==='admin'?'Admin':'User';rb.className='rbdg r-'+(u.role==='superadmin'?'sa':u.role==='admin'?'ad':'us');if(u.role==='superadmin')el('adminNav').style.display='block';}
+function clearUser(){CU=null;el('gArea').style.display='block';el('uArea').style.display='none';el('adminNav').style.display='none';}
+function doLogout(){wLog('ออกจากระบบ','','info');clearUser();toast('ออกจากระบบ','t-i');renderAll();}
+
+/* ===== MODAL ===== */
+let _mm=null,_mc=null,_alf=null;
+function openModal(title,body,saveLbl,mode,ctx){_mm=mode;_mc=ctx;el('mTtl').textContent=title;el('mBd').innerHTML=body;el('mSave').textContent=saveLbl||'ยืนยัน';el('ov').classList.add('open');}
+function closeModal(){el('ov').classList.remove('open');_mm=null;_mc=null;}
+el('ov').addEventListener('click',e=>{if(e.target===el('ov'))closeModal();});
+
+function openLogin(after){
+  _alf=after||null;
+  openModal('เข้าสู่ระบบ – รพ.แม่แตง',
+    `<div style="text-align:center;margin-bottom:16px">
+      <img src="https://www.maetaeng.go.th/assets/3-DPQvDzlj.png" style="width:50px;height:50px;object-fit:contain;margin:0 auto" onerror="this.style.display='none'">
+      <p style="color:var(--tx3);font-size:12px;margin-top:6px">กรุณาเข้าสู่ระบบเพื่อบันทึก/แก้ไขข้อมูล</p></div>
+    <div class="fg"><label>ชื่อผู้ใช้</label><input type="text" id="liU" placeholder="username" autocomplete="username"></div>
+    <div class="fg"><label>รหัสผ่าน</label><input type="password" id="liP" placeholder="password" onkeydown="if(event.key==='Enter')modalSave()"></div>
+    <div id="liErr" style="color:var(--er);font-size:12px;display:none;margin-bottom:4px"></div>
+    <div style="padding:9px 11px;background:var(--cd2);border-radius:7px;font-size:11px;color:var(--tx3);line-height:1.8">
+      <b style="color:var(--ac)">บัญชีทดสอบ:</b><br>
+      superadmin/Admin@1234 &nbsp;|&nbsp; strategy.admin/ST@2568<br>
+      hn.admin/HN@2568 &nbsp;|&nbsp; rm.admin/RM@2568 &nbsp;|&nbsp; viewer/View@123</div>`,
+    'เข้าสู่ระบบ','login',null);
+  setTimeout(()=>el('liU')?.focus(),120);
+}
+function modalSave(){if(_mm==='login')doLogin();else if(_mm==='editHA')saveHAData(_mc);else if(_mm==='editST')saveStratData(_mc);else if(_mm==='addUser')doAddUser();}
+async function doLogin(){
+  const u=el('liU').value.trim(),p=el('liP').value;
+  if(GS_URL){const res=await gsLoginUser(u,p);if(res?.ok){setUser(res.user);wLog('เข้าสู่ระบบ (GS)',u,'success');closeModal();toast('ยินดีต้อนรับ '+res.user.name,'t-ok');if(_alf){_alf();_alf=null;}renderAll();return;}}
+  const found=getUsers().find(x=>x.username===u&&x.password===p);
+  if(!found){el('liErr').style.display='block';el('liErr').textContent='ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';wLog('Login ล้มเหลว',u,'warn');return;}
+  setUser(found);wLog('เข้าสู่ระบบ (Local)',u,'success');closeModal();toast('ยินดีต้อนรับ '+found.name,'t-ok');if(_alf){_alf();_alf=null;}renderAll();
+}
+function needLogin(fn){if(!CU){openLogin(fn);return false;}return true;}
+
+/* ===== NAVIGATION ===== */
+const PTITLES={'overview':'ภาพรวม Dashboard','strat':'KPI ยุทธศาสตร์','ha1':'KPI HA – Part 1','ha2':'KPI HA – Part 2','ha3':'KPI HA – Part 3','ha4':'KPI HA – Part 4','a-users':'จัดการผู้ใช้งาน','a-logs':'Log การใช้งาน','a-set':'ตั้งค่าระบบ'};
+function goPage(pid){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));document.querySelectorAll('[data-p]').forEach(n=>n.classList.remove('active'));el('pg-'+pid)?.classList.add('active');document.querySelectorAll(`[data-p="${pid}"]`).forEach(n=>n.classList.add('active'));el('tbTtl').textContent=PTITLES[pid]||pid;closeSb();if(pid==='a-logs')renderLogs();if(pid==='a-users')renderUsers();}
+function goStrat(yid,pid){document.querySelectorAll('.ni3').forEach(n=>n.classList.remove('active'));document.querySelectorAll(`[data-sp="${yid}-${pid}"]`).forEach(n=>n.classList.add('active'));document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));el('pg-strat').classList.add('active');el('tbTtl').textContent='KPI ยุทธศาสตร์';closeSb();renderStratPlan(yid,pid);}
+function toggleL1(iid,sid){el(iid).classList.toggle('go');el(sid).classList.toggle('open');}
+function toggleL2(iid,sid){el(iid).classList.toggle('go2');el(sid).classList.toggle('open');}
+function toggleSb(){el('sb').classList.toggle('open');el('mask').classList.toggle('open');}
+function closeSb(){el('sb').classList.remove('open');el('mask').classList.remove('open');}
+
+/* ===== DATA STORE ===== */
+function getData(){const r=localStorage.getItem(DATA_KEY);if(r)return JSON.parse(r);const d=buildDefault();saveRaw(d);return d;}
+function saveRaw(d){d.lastUpdate=new Date().toISOString();localStorage.setItem(DATA_KEY,JSON.stringify(d));}
+function saveData(d,logMsg=''){saveRaw(d);bumpVer();wLog('บันทึกข้อมูล',logMsg,'success');}
+
+/* ===== STATUS ===== */
+function sts(v,target){if(v===''||v===null||v===undefined)return 'pend';const vs=String(v).toLowerCase().trim();if(vs==='na')return 'na';if(vs.includes('ผ่าน')&&!vs.includes('ไม่'))return 'pass';if(vs.includes('ไม่ผ่าน'))return 'fail';const nv=parseFloat(vs);if(isNaN(nv))return 'na';const t=String(target||'');const nt=parseFloat(t.replace(/[^0-9.]/g,''));if(isNaN(nt))return 'na';if(t.match(/^[>≥]/)||t.includes('>='))return nv>=nt?'pass':'fail';if(t.match(/^[<≤]/)||t.includes('<='))return nv<=nt?'pass':'fail';return 'na';}
+const SL={pass:['✅ ผ่าน','cp-ok'],fail:['❌ ไม่ผ่าน','cp-er'],pend:['⏳ รอข้อมูล','cp-wn'],na:['— N/A','cp-na']};
+const chip=s=>{const m=SL[s]||SL.na;return `<span class="chip ${m[1]}">${m[0]}</span>`;};
+const vcol=(v,t)=>{const s=sts(v,t);return s==='pass'?'var(--ok)':s==='fail'?'var(--er)':'var(--tx)';};
+function latestVal(vals,fy){const ms=vals[fy]||[];for(let i=ms.length-1;i>=0;i--){if(ms[i]!=='')return ms[i];}return '';}
+
+/* ===== OVERVIEW ===== */
+let _cD1,_cD2;
+function renderOverview(){
+  const d=getData();
+  const all=d.strategic.flatMap(y=>y.plans.flatMap(p=>p.indicators));
+  let pass=0,fail=0,pend=0;
+  all.forEach(i=>{const s=sts(latestVal(i.values,AY),i.target);if(s==='pass')pass++;else if(s==='fail')fail++;else pend++;});
+  const total=all.length;
+  setText('ovPass',pass);setText('ovFail',fail);setText('ovPend',pend);
+  const pp=el('ovPP'),fp=el('ovFP'),wp=el('ovWP');
+  if(pp)pp.style.width=Math.round(pass/total*100)+'%';
+  if(fp)fp.style.width=Math.round(fail/total*100)+'%';
+  if(wp)wp.style.width=Math.round(pend/total*100)+'%';
+  const haAll=[...d.ha.part1.sections,...d.ha.part2.sections,...d.ha.part4.sections].flatMap(s=>s.indicators);
+  setText('ovHA',haAll.length);
+  setText('cLbl1',AY);setText('cLbl2',AY);setText('haPendYr',AY);setText('sbFY',AY);
+  const ovSub=el('ovSub');
+  if(ovSub)ovSub.textContent=`ปีงบประมาณ ${AY} · อัปเดต: ${d.lastUpdate?new Date(d.lastUpdate).toLocaleString('th-TH'):'-'} · KPI ยุทธศาสตร์ 5 ด้าน | KPI HA 4 Part`;
+  const fails=all.filter(i=>sts(latestVal(i.values,AY),i.target)==='fail');
+  const ws=el('wStrat');
+  if(ws)ws.innerHTML=fails.length?fails.map(i=>`<div class="wr"><div class="wdot" style="background:var(--erb);color:var(--er)">!</div><div style="flex:1;font-size:12.5px">${i.name.slice(0,60)}${i.name.length>60?'…':''}</div><b style="color:var(--er);font-size:12px;flex-shrink:0">${latestVal(i.values,AY)||'—'}</b></div>`).join(''):'<div style="text-align:center;padding:18px;color:var(--ok)">🎉 ทุกตัวชี้วัดผ่านเป้าหมาย!</div>';
+  const haPend=haAll.filter(i=>!latestVal(i.values,AY));
+  const wh=el('wHA');
+  if(wh)wh.innerHTML=haPend.length?haPend.map(i=>`<div class="wr"><div class="wdot" style="background:var(--wnb);color:var(--wn)">?</div><div style="flex:1;font-size:12.5px">${i.name.slice(0,55)}${i.name.length>55?'…':''}</div><span style="color:var(--tx3);font-size:11px;flex-shrink:0">${i.responsible||''}</span></div>`).join(''):'<div style="text-align:center;padding:18px;color:var(--ok)">🎉 บันทึกข้อมูลครบแล้ว!</div>';
+  const cs=getComputedStyle(document.documentElement),cv=v=>cs.getPropertyValue(v).trim();
+  if(_cD1)_cD1.destroy();if(_cD2)_cD2.destroy();
+  const chartOpts={responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:cv('--tx2'),font:{family:'Sarabun',size:11},padding:10}}}};
+  _cD1=new Chart(el('cDonut1'),{type:'doughnut',data:{labels:d.strategic.map(y=>`ยุทธ ${y.no}`),datasets:[{data:d.strategic.map(y=>y.plans.flatMap(p=>p.indicators).length),backgroundColor:['#38bdf8','#a78bfa','#34d399','#fbbf24','#f87171'],borderWidth:0,hoverOffset:5}]},options:chartOpts});
+  _cD2=new Chart(el('cDonut2'),{type:'doughnut',data:{labels:['Part 1 ทีมนำ','Part 2 ระบบงาน','Part 3 PCT','Part 4 ผลลัพธ์'],datasets:[{data:[d.ha.part1.sections.flatMap(s=>s.indicators).length,d.ha.part2.sections.flatMap(s=>s.indicators).length,3,d.ha.part4.sections.flatMap(s=>s.indicators).length],backgroundColor:['#38bdf8','#8b5cf6','#10b981','#f59e0b'],borderWidth:0,hoverOffset:5}]},options:chartOpts});
+}
+
+/* ===== STRATEGIC ===== */
+function renderStratPlan(yid,pid){
+  _sYid=yid;_sPid=pid;
+  const d=getData();
+  const yObj=d.strategic.find(y=>y.id===yid);
+  const pObj=yObj?.plans.find(p=>p.id===pid);
+  if(!pObj)return;
+  setText('sPlanCrumb',`KPI ยุทธศาสตร์  ยุทธศาสตร์ที่ ${yObj.no}: ${yObj.short}`);
+  setText('sPlanTitle',`แผนงานที่ ${pObj.no}: ${pObj.name}`);
+  setText('sPlanSub',`${pObj.indicators.length} ตัวชี้วัด`);
+  const syt=el('sYTabs');if(syt)syt.innerHTML=FYS.map(y=>`<div class="ytab${y===AY?' active':''}" onclick="setSAY('${y}')">${y}</div>`).join('');
+  const sqt=el('sQTabs');if(sqt)sqt.innerHTML=QNM.map((q,i)=>`<div class="qtab${i===AQ?' active':''}" onclick="setAQ(${i})">${q}</div>`).join('');
+  renderStratTable(pObj);
+}
+function setSAY(y){AY=y;localStorage.setItem(AY_KEY,y);setText('sbFY',y);document.querySelectorAll('.ytab').forEach(t=>t.classList.toggle('active',t.textContent===y));renderAll();}
+function setAQ(i){AQ=i;document.querySelectorAll('.qtab').forEach(t=>t.classList.toggle('active',t.textContent===QNM[i]));const d=getData();const pObj=d.strategic.find(y=>y.id===_sYid)?.plans.find(p=>p.id===_sPid);if(pObj)renderStratTable(pObj);}
+function renderStratTable(pObj){
+  const months=fyMonths(AY),qMonths=months.slice(AQ*3,AQ*3+3),ae=canEdit('strat');
+  const c=el('sPlanBody');if(!c)return;
+  c.innerHTML=`<div class="card"><div class="cb nb"><div class="tw"><table>
+    <thead><tr><th style="width:50px">ที่</th><th>ตัวชี้วัด</th><th>หน่วยงาน</th><th>เป้าหมาย</th>
+    ${qMonths.map(m=>`<th class="m-head">${m}</th>`).join('')}
+    <th class="m-head">สถานะ</th><th>HA</th>${ae?'<th>แก้ไข</th>':''}
+    </tr></thead><tbody>
+    ${pObj.indicators.map(ind=>{const lv=latestVal(ind.values,AY),s=sts(lv,ind.target),mStart=AQ*3;return `<tr>
+      <td style="color:var(--tx3)">${ind.no}</td>
+      <td style="min-width:200px;font-size:13px">${ind.name}</td>
+      <td style="font-size:11.5px;color:var(--tx3);white-space:nowrap">${ind.focal||'—'}</td>
+      <td style="font-size:12px;color:var(--tx3);white-space:nowrap">${ind.target}</td>
+      ${qMonths.map((_,mi)=>{const v=(ind.values[AY]||[])[mStart+mi]||'',sc=v?sts(v,ind.target):'na';return `<td class="m-cell ${sc==='pass'?'val-ok':sc==='fail'?'val-er':''}">${v||'—'}</td>`;}).join('')}
+      <td>${chip(s)}</td><td>${ind.haLink?'<span class="chip cp-ha">HA</span>':'<span style="color:var(--bd2)">—</span>'}</td>
+      ${ae?`<td><button class="btn btn-xs btn-o" onclick="openEditStrat('${ind.id}')">✏️</button></td>`:''}
+    </tr>`}).join('')}
+    </tbody></table></div></div></div>`;
+}
+function filterStrat(q){document.querySelectorAll('#stratAcc tbody tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';});}
+
+/* ===== HA RENDER ===== */
+function renderHAPart(part,tabsId,ytabId,conId,active){
+  const d=getData(),secs=d.ha[part].sections;
+  const te=el(tabsId);if(te)te.innerHTML=secs.map(s=>`<div class="ptab${s.id===active?' active':''}" onclick="setHASec('${part}','${s.id}','${tabsId}','${ytabId}','${conId}')">${s.name}</div>`).join('');
+  const ye=el(ytabId);if(ye)ye.innerHTML=FYS.map(y=>`<div class="ytab${y===AY?' active':''}" onclick="setSAY('${y}')">${y}</div>`).join('');
+  const sec=secs.find(s=>s.id===active);if(sec)renderHASection(conId,sec,part);
+}
+function setHASec(part,id,tid,yid,cid){if(part==='part1')p1A=id;else if(part==='part2')p2A=id;else p4A=id;renderHAPart(part,tid,yid,cid,id);}
+function renderHASection(cid,sec,part){
+  const ae=canEdit(part.replace('part','ha'))||(CU&&CU.role==='superadmin');
+  const months=fyMonths(AY);
+  const numI=sec.indicators.filter(i=>FYS.some(y=>(i.values[y]||[]).some(v=>!isNaN(parseFloat(v)))));
+  const c=el(cid);if(!c)return;
+  c.innerHTML=`
+  <div class="card">
+    <div class="ch"><div class="cico" style="background:var(--acb)">📋</div><h3>${sec.name}</h3><div class="ch-meta">ผู้รับผิดชอบ: ${sec.responsible}</div></div>
+    <div class="cb nb"><div class="tw"><table>
+      <thead><tr><th>ที่</th><th>ตัวชี้วัด</th><th>เป้าหมาย</th><th>ผู้รับผิดชอบ</th>
+      ${months.map((m,i)=>`<th class="m-head"${i%3===0?' style="border-left:2px solid var(--acb)"':''} title="${QNM[Math.floor(i/3)]}">${m}</th>`).join('')}
+      <th>สถานะ ${AY}</th><th>ยุทธ</th>${ae?'<th>แก้ไข</th>':''}
+      </tr></thead><tbody>
+      ${sec.indicators.map(i=>{const lv=latestVal(i.values,AY),s=sts(lv,i.target);return `<tr>
+        <td style="color:var(--tx3)">${i.no}</td>
+        <td style="min-width:180px;font-size:13px">${i.name}</td>
+        <td style="color:var(--tx3);font-size:12px;white-space:nowrap">${i.target}</td>
+        <td style="font-size:12px;color:var(--tx3)">${i.responsible||''}</td>
+        ${(i.values[AY]||Array(12).fill('')).map((v,mi)=>{const sc=v?sts(v,i.target):'na',bl=mi%3===0?'border-left:2px solid var(--acb);':'';return `<td class="m-cell ${sc==='pass'?'val-ok':sc==='fail'?'val-er':''}" style="${bl}">${v||'—'}</td>`;}).join('')}
+        <td>${chip(s)}</td><td>${i.linkStrat?'<span class="chip cp-st">ยุทธ</span>':'<span style="color:var(--bd2)">—</span>'}</td>
+        ${ae?`<td><button class="btn btn-xs btn-p" onclick="openEditHA('${part}','${sec.id}','${i.id}')">✏️</button></td>`:''}
+      </tr>`}).join('')}
+      </tbody></table></div></div>
+  </div>
+  ${numI.length?`<div class="card"><div class="ch"><div class="cico" style="background:var(--okb)">📈</div><h3>กราฟแนวโน้ม ${AY}</h3></div>
+  <div class="cb"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px">
+  ${numI.slice(0,4).map((i,idx)=>`<div class="cwrap" style="margin:0"><h4>${i.no}. ${i.name.slice(0,38)}${i.name.length>38?'…':''}</h4><canvas id="mc-${cid}-${idx}" height="110"></canvas></div>`).join('')}
+  </div></div></div>`:''}`;
+  setTimeout(()=>{
+    const cs=getComputedStyle(document.documentElement),cv=v=>cs.getPropertyValue(v).trim();
+    numI.slice(0,4).forEach((i,idx)=>{
+      const ctx=el(`mc-${cid}-${idx}`);if(!ctx)return;
+      new Chart(ctx,{type:'line',data:{labels:fyMonths(AY),datasets:[{label:i.unit||'ค่า',data:(i.values[AY]||Array(12).fill('')).map(v=>parseFloat(v)||null),borderColor:cv('--ac2'),backgroundColor:'rgba(56,189,248,.07)',tension:.4,fill:true,pointRadius:3,spanGaps:true}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:cv('--tx2'),font:{size:9,family:'Sarabun'}},grid:{color:cv('--bd')}},y:{ticks:{color:cv('--tx2'),font:{size:9,family:'Sarabun'}},grid:{color:cv('--bd')}}}}});
+    });
+  },80);
+}
+
+/* ===== EDIT MODALS ===== */
+function buildMonthInputs(prefix,vals){
+  let html='';
+  FYS.forEach(fy=>{
+    const ms=fyMonths(fy),vArr=vals[fy]||Array(12).fill('');
+    html+=`<div class="qfg"><div class="qfg-hd">📅 ปีงบประมาณ ${fy}</div><div class="r4">`;
+    ms.forEach((m,i)=>{html+=`<div class="fg"><label>${m}</label><input type="text" id="${prefix}-${fy}-${i}" value="${vArr[i]||''}" placeholder="—"></div>`;});
+    html+='</div></div>';
+  });
+  return html;
+}
+function openEditStrat(indId){
+  if(!needLogin(()=>openEditStrat(indId)))return;
+  const d=getData();
+  const ind=d.strategic.flatMap(y=>y.plans.flatMap(p=>p.indicators)).find(i=>i.id===indId);
+  openModal('✏️ บันทึก KPI ยุทธศาสตร์',
+    `<div class="alert al-w" style="margin-bottom:12px">⚠️ KPI ยุทธศาสตร์ ไม่ Sync ไปยัง KPI HA (ทิศทางเดียว)</div>
+     <div class="alert al-i" style="margin-bottom:14px">🎯 <b>${ind.name}</b><br><small>เป้าหมาย: ${ind.target}</small></div>`
+    +buildMonthInputs('sv',ind.values),
+    '💾 บันทึก','editST',{indId});
+}
+async function saveStratData(ctx){
+  const d=getData();
+  const ind=d.strategic.flatMap(y=>y.plans.flatMap(p=>p.indicators)).find(i=>i.id===ctx.indId);
+  FYS.forEach(fy=>{ind.values[fy]=Array(12).fill(0).map((_,i)=>{const e=el(`sv-${fy}-${i}`);return e?e.value.trim():'';});});
+  saveData(d,`KPI ยุทธ: ${ind.name.slice(0,30)}`);
+  closeModal();renderAll();
+  const r=await gsSaveKPI('strategic',ind,ind.values,null);
+  toast(r?.ok?'บันทึก + Sync Google Sheets':GS_URL?'บันทึก Local (GS ไม่ตอบสนอง)':'บันทึกเรียบร้อย',r?.ok?'t-ok':GS_URL?'t-w':'t-ok');
+}
+function openEditHA(part,secId,indId){
+  if(!needLogin(()=>openEditHA(part,secId,indId)))return;
+  const d=getData();
+  const sec=d.ha[part].sections.find(s=>s.id===secId);
+  const ind=sec.indicators.find(i=>i.id===indId);
+  openModal('✏️ บันทึก KPI HA',
+    `<div class="alert al-i" style="margin-bottom:12px">📋 <b>${ind.name}</b></div>
+     <div style="font-size:12px;color:var(--tx3);margin-bottom:14px">เป้าหมาย: <b>${ind.target}</b> · ผู้รับผิดชอบ: ${ind.responsible||''}
+     ${ind.linkStrat?'<br><span class="chip cp-st" style="margin-top:5px">🔗 เชื่อมโยง KPI ยุทธศาสตร์ – Sync อัตโนมัติ</span>':''}</div>`
+    +buildMonthInputs('hv',ind.values),
+    '💾 บันทึก','editHA',{part,secId,indId});
+}
+async function saveHAData(ctx){
+  const {part,secId,indId}=ctx;
+  const d=getData();
+  const sec=d.ha[part].sections.find(s=>s.id===secId);
+  const ind=sec.indicators.find(i=>i.id===indId);
+  FYS.forEach(fy=>{ind.values[fy]=Array(12).fill(0).map((_,i)=>{const e=el(`hv-${fy}-${i}`);return e?e.value.trim():'';});});
+  if(ind.linkStrat){const si=d.strategic.flatMap(y=>y.plans.flatMap(p=>p.indicators)).find(i=>i.id===ind.linkStrat);if(si)FYS.forEach(fy=>{si.values[fy]=(ind.values[fy]||[]).map((v,i)=>v||si.values[fy]?.[i]||'');});}
+  saveData(d,`HA ${sec.name}: ${ind.name.slice(0,30)}`);
+  closeModal();renderAll();
+  const kpiTypeMap={part1:'ha1',part2:'ha2',part4:'ha4'};
+  const r=await gsSaveKPI(kpiTypeMap[part]||part,ind,ind.values,sec);
+  if(r?.ok)toast(r.synced?'Sync GS + ยุทธศาสตร์ อัตโนมัติ':'บันทึก + Sync Google Sheets','t-ok');
+  else toast(GS_URL?'บันทึก Local (GS ไม่ตอบสนอง)':'บันทึกเรียบร้อย',GS_URL?'t-w':'t-ok');
+}
+
+/* ===== ADMIN ===== */
+function renderUsers(){
+  const users=getUsers(),uEl=el('userWrap');if(!uEl)return;
+  uEl.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><b>ผู้ใช้งาน (${users.length} คน)</b><button class="btn btn-p btn-sm" onclick="openAddUser()">➕ เพิ่มผู้ใช้</button></div>
+  <div class="card"><div class="cb nb"><div class="tw"><table>
+  <thead><tr><th>ชื่อ</th><th>Username</th><th>Role</th><th>แผนก</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead><tbody>
+  ${users.map(u=>`<tr><td style="font-weight:500">${u.name}</td><td style="color:var(--tx3)">@${u.username}</td><td><span class="rbdg r-${u.role==='superadmin'?'sa':u.role==='admin'?'ad':'us'}">${u.role==='superadmin'?'Super Admin':u.role==='admin'?'Admin':'User'}</span></td><td style="color:var(--tx3)">${u.dept}</td><td style="font-size:11.5px;color:var(--tx3)">${(u.canEdit||[]).join(', ')||'—'}</td><td>${u.id!=='u1'?`<button class="btn btn-xs btn-er" onclick="delUser('${u.id}')">🗑️</button>`:'—'}</td></tr>`).join('')}
+  </tbody></table></div></div></div>`;
+}
+function openAddUser(){
+  openModal('➕ เพิ่มผู้ใช้งาน',
+    `<div class="r2"><div class="fg"><label>ชื่อ-นามสกุล</label><input type="text" id="nu-nm"></div><div class="fg"><label>Username</label><input type="text" id="nu-un"></div></div>
+     <div class="r2"><div class="fg"><label>Password</label><input type="password" id="nu-pw"></div><div class="fg"><label>แผนก</label><input type="text" id="nu-dp"></div></div>
+     <div class="fg"><label>Role</label><select id="nu-rl"><option value="user">User</option><option value="admin">Admin</option><option value="superadmin">Super Admin</option></select></div>
+     <div class="fg"><label>สิทธิ์แก้ไข (Admin)</label><select id="nu-pm" multiple style="height:80px"><option value="ha1">HA Part 1</option><option value="ha2">HA Part 2</option><option value="ha4">HA Part 4</option><option value="strat">ยุทธศาสตร์</option></select></div>`,
+    '✅ เพิ่ม','addUser',null);
+}
+function doAddUser(){
+  const nm=el('nu-nm').value.trim(),un=el('nu-un').value.trim(),pw=el('nu-pw').value,dp=el('nu-dp').value.trim();
+  const rl=el('nu-rl').value,pm=[...el('nu-pm').selectedOptions].map(o=>o.value);
+  if(!nm||!un||!pw){toast('กรอกให้ครบ','t-er');return;}
+  const users=getUsers();users.push({id:'u'+Date.now(),username:un,password:pw,name:nm,role:rl,dept:dp,canEdit:pm});
+  saveUsers(users);wLog('เพิ่มผู้ใช้',un,'success');closeModal();renderUsers();toast('เพิ่มผู้ใช้เรียบร้อย','t-ok');
+}
+function delUser(id){
+  if(!confirm('ยืนยันลบ?'))return;
+  const u=getUsers().find(x=>x.id===id);
+  saveUsers(getUsers().filter(x=>x.id!==id));
+  wLog('ลบผู้ใช้',u?.username||id,'warn');renderUsers();toast('ลบเรียบร้อย','t-i');
+}
+
+/* ===== SETTINGS ===== */
+function saveSettings(){
+  AY=el('setFY').value;localStorage.setItem(AY_KEY,AY);
+  const url=(el('setGSUrl')?.value||'').trim();
+  if(url){GS_URL=url;localStorage.setItem(GS_URL_KEY,url);}
+  wLog('บันทึกการตั้งค่า','ปีงบ '+AY,'info');
+  toast('บันทึกการตั้งค่าเรียบร้อย','t-ok');renderAll();
+}
+
+/* ===== RENDER ALL ===== */
+function renderAll(){
+  setText('sbFY',AY);
+  renderOverview();
+  if(el('pg-strat')?.classList.contains('active'))renderStratPlan(_sYid,_sPid);
+  renderHAPart('part1','p1Tabs','p1YTabs','p1Con',p1A);
+  renderHAPart('part2','p2Tabs','p2YTabs','p2Con',p2A);
+  renderHAPart('part4','p4Tabs','p4YTabs','p4Con',p4A);
+}
+function buildDefault() {
+  return { strategic:strategicDef(), ha:{part1:p1Def(),part2:p2Def(),part4:p4Def()}, lastUpdate:new Date().toISOString() };
+}
+
+function strategicDef() { return [
+/* ══ ยุทธศาสตร์ที่ 1: PP&P Excellence ══ */
+{id:'y1',no:1,short:'PP&P Excellence',
+ name:'ด้านส่งเสริมสุขภาพ ป้องกันโรค และคุ้มครองผู้บริโภคเป็นเลิศ (PP&P Excellence)',
+ color:'#38bdf8',plans:[
+  {id:'p1',no:1,name:'การพัฒนาคุณภาพชีวิตคนไทยทุกกลุ่มวัย (ด้านสุขภาพ)',indicators:[
+    {id:'y1p1i1',no:'1',name:'อัตราส่วนการตายมารดาไทยต่อการเกิดมีชีพแสนคน (ไม่เกิน 16 ต่อการเกิดมีชีพแสนคน)',target:'≤ 16 ต่อแสนคน',focal:'กรมอนามัย',report:'รายงาน LR/เขต',haLink:null,values:emptyVals()},
+    {id:'y1p1i2a',no:'2.1)',name:'ร้อยละเด็ก 0-5 ปีมีพัฒนาการสมวัย (≥ร้อยละ 88) (เดิมร้อยละ 87)',target:'≥ ร้อยละ 88',focal:'กรมอนามัย',report:'HDC',haLink:'h4-2-2',values:emptyVals()},
+    {id:'y1p1i2b',no:'2.2)',name:'ร้อยละของเด็กอายุ 0 – 5 ปี ฟันดีไม่มีผุ (Cavity Free) (≥ร้อยละ 80)',target:'≥ ร้อยละ 80',focal:'กรมอนามัย',report:'รายงาน',haLink:null,values:emptyVals()},
+    {id:'y1p1i3',no:'3',name:'ร้อยละของชุมชนมีการดำเนินงานจัดการสุขภาพที่เหมาะสมกับประชาชน (ร้อยละ 90)',target:'ร้อยละ 90',focal:'กรมสนับสนุนบริการสุขภาพ',report:'Health Gate',haLink:null,values:emptyVals()},
+    {id:'y1p1i4',no:'4',name:'อัตราความรอบรู้ด้านสุขภาพของประชาชนไทย อายุ 15 ปี ขึ้นไป (≥ร้อยละ 83) (เดิมร้อยละ 82)',target:'≥ ร้อยละ 83',focal:'กองส่งเสริมความรอบรู้ฯ',report:'สาสุข',haLink:null,values:emptyVals()},
+    {id:'y1p1i5',no:'5',name:'ระดับความรอบรู้สุขภาพของประชาชน เรื่องโรคอุบัติใหม่และโรคอุบัติซ้ำเพิ่มขึ้น ไม่น้อยกว่าร้อยละ 5 (Proxy: ร้อยละของประชากรกลุ่มเป้าหมายที่มีความรอบรู้ในการป้องกันควบคุมโรคใช้ระดับเทียบเตือนขึ้นไป)',target:'≥ ร้อยละ 5',focal:'กรมควบคุมโรค',report:'HDC/รจ.',haLink:null,values:emptyVals()},
+  ]},
+  {id:'p2',no:2,name:'การป้องกันควบคุมโรคและลดปัจจัยเสี่ยงด้านสุขภาพ',indicators:[
+    {id:'y1p2i6a',no:'6.1)',name:'ร้อยละการตรวจคัดกรองยืนยันวินิจฉัยกลุ่มสงสัยป่วยโรคเบาหวาน (≥ร้อยละ 70)',target:'≥ ร้อยละ 70',focal:'กรมควบคุมโรค',report:'HDC',haLink:null,values:emptyVals()},
+    {id:'y1p2i6b',no:'6.2)',name:'ร้อยละการตรวจคัดกรองยืนยันวินิจฉัยกลุ่มสงสัยป่วยโรคความดันโลหิตสูง (≥ร้อยละ 80)',target:'≥ ร้อยละ 80',focal:'กรมควบคุมโรค',report:'HDC',haLink:null,values:emptyVals()},
+    {id:'y1p2i7',no:'7',name:'อัตราการเสียชีวิตและระยะบาดเจ็บจากอุบัติเหตุทางถนนในกลุ่มเด็กและเยาวชน อายุ 1-15 ปี ลดลง (ร้อยละ 3)',target:'ลดลง ≥ ร้อยละ 3',focal:'กรมควบคุมโรค',report:'รายงาน',haLink:null,values:emptyVals()},
+    {id:'y1p2i8',no:'8',name:'ร้อยละความครอบคลุมของวัคซีนป้องกันหัด-คางทูม-หัดเยอรมัน (MMR) เข็มที่ 2 ในเด็กอายุต่ำกว่า 3 ปี ระดับอำเภอ เป็นไปตามเป้าหมายการกำจัดโรคหัดตามพันธสัญญานานาชาติ (ความครอบคลุมวัคซีน MMR2 รายจังหวัด ณ วันที่ 30 กันยายน 2569)',target:'ตามเป้าหมาย',focal:'กรมควบคุมโรค',report:'HDC',haLink:null,values:emptyVals()},
+  ]},
+  {id:'p3',no:3,name:'การบริหารจัดการสิ่งแวดล้อม',indicators:[
+    {id:'y1p3i9',no:'9',name:'ร้อยละของโรงพยาบาลที่พัฒนาอนามัยสิ่งแวดล้อมได้ตามเกณฑ์ GREEN & CLEAN Hospital Challenge (ระดับมาตรฐานขึ้นไป)',target:'≥ ร้อยละ 85',focal:'กรมอนามัย',report:'รายงาน',haLink:'h2-env-1',values:emptyVals()},
+    {id:'y1p3i10',no:'10',name:'ผลการวิเคราะห์คุณภาพน้ำเสียที่ผ่านการบำบัด (13 Parameters) ผ่านเกณฑ์',target:'ผ่านเกณฑ์',focal:'สมจิตร',report:'รายงาน',haLink:'h1-1-5',values:emptyVals()},
+    {id:'y1p3i11',no:'11',name:'ข้อร้องเรียนของชุมชนเกี่ยวกับขยะติดเชื้อ/น้ำเสีย',target:'0 เรื่อง',focal:'สมจิตร',report:'รายงาน',haLink:'h1-1-6',values:emptyVals()},
+  ]},
+]},
+
+/* ══ ยุทธศาสตร์ที่ 2: Service Excellence ══ */
+{id:'y2',no:2,short:'Service Excellence',
+ name:'ด้านการพัฒนาและจัดระบบบริการสุขภาพที่มีคุณภาพมาตรฐานเป็นเลิศ (Service Excellence)',
+ color:'#a78bfa',plans:[
+  {id:'p4',no:4,name:'การพัฒนาระบบบริการสุขภาพ (Service Plan)',indicators:[
+    {id:'y2p4i1',no:'1',name:'อัตราความพึงพอใจของผู้รับบริการผู้ป่วยนอก',target:'>ร้อยละ 80',focal:'PCT/OPD',report:'แบบสอบถาม',haLink:'h1-3-1',values:emptyVals()},
+    {id:'y2p4i2',no:'2',name:'อัตราความพึงพอใจของผู้รับบริการผู้ป่วยใน',target:'>ร้อยละ 80',focal:'PCT/IPD',report:'แบบสอบถาม',haLink:'h1-3-2',values:emptyVals()},
+    {id:'y2p4i3',no:'3',name:'อัตราผู้ป่วยเบาหวานควบคุมระดับน้ำตาลได้ (HbA1c < 7)',target:'>ร้อยละ 40',focal:'DM Nurse',report:'HDC',haLink:'h4-2-2',values:emptyVals()},
+    {id:'y2p4i4',no:'4',name:'อัตราผู้ป่วยความดันโลหิตสูงควบคุมได้ (BP < 140/90)',target:'>ร้อยละ 50',focal:'HT Nurse',report:'HDC',haLink:'h4-2-3',values:emptyVals()},
+  ]},
+  {id:'p5',no:5,name:'การพัฒนาระบบการแพทย์ฉุกเฉินและระบบส่งต่อ',indicators:[
+    {id:'y2p5i1',no:'1',name:'อัตราการส่งต่อผู้ป่วยฉุกเฉินภายใน 30 นาที',target:'>ร้อยละ 90',focal:'ER',report:'รายงาน ER',haLink:null,values:emptyVals()},
+    {id:'y2p5i2',no:'2',name:'อัตราผู้ป่วย Stroke ได้รับ rt-PA ภายใน 60 นาที (door-to-needle time)',target:'>ร้อยละ 80',focal:'แพทย์',report:'HIS',haLink:null,values:emptyVals()},
+    {id:'y2p5i3',no:'3',name:'อัตราผู้ป่วยกลับมา Readmit ภายใน 28 วัน ด้วยโรคเดิม',target:'<ร้อยละ 5',focal:'แพทย์/QMR',report:'HIS',haLink:'h2-mso-1',values:emptyVals()},
+  ]},
+  {id:'p6',no:6,name:'การพัฒนาระบบสุขภาพช่องปากและทันตกรรม',indicators:[
+    {id:'y2p6i1',no:'1',name:'ร้อยละเด็กอายุ 3 ปีปราศจากฟันน้ำนมผุ (Cavity Free)',target:'>ร้อยละ 55',focal:'ทันตแพทย์',report:'HDC',haLink:null,values:emptyVals()},
+    {id:'y2p6i2',no:'2',name:'ร้อยละผู้สูงอายุมีฟันแท้ใช้งานได้ ≥ 20 ซี่ หรือ 4 คู่สบ',target:'>ร้อยละ 80',focal:'ทันตแพทย์',report:'HDC',haLink:null,values:emptyVals()},
+  ]},
+]},
+
+/* ══ ยุทธศาสตร์ที่ 3: People Excellence ══ */
+{id:'y3',no:3,short:'People Excellence',
+ name:'ด้านการพัฒนาทรัพยากรบุคคลเป็นเลิศ (People Excellence)',
+ color:'#34d399',plans:[
+  {id:'p7',no:7,name:'การพัฒนาสมรรถนะและศักยภาพบุคลากรสาธารณสุข',indicators:[
+    {id:'y3p7i1',no:'1',name:'อัตราความผูกพันของบุคลากรต่อองค์กร',target:'>ร้อยละ 80',focal:'HRD',report:'แบบสอบถาม',haLink:'h1-1-1',values:emptyVals()},
+    {id:'y3p7i2',no:'2',name:'ร้อยละบุคลากรได้รับการพัฒนาตามแผนพัฒนาบุคลากร',target:'>ร้อยละ 90',focal:'HRD',report:'รายงาน HRD',haLink:'h1-5-1',values:emptyVals()},
+    {id:'y3p7i3',no:'3',name:'ร้อยละผู้เข้าร่วมประชุมผู้นำพบเจ้าหน้าที่ (Town Hall Meeting)',target:'>ร้อยละ 50',focal:'HRD',report:'รายงาน',haLink:'h1-1-2',values:emptyVals()},
+    {id:'y3p7i4',no:'4',name:'อัตราการลาป่วยของบุคลากร',target:'<ร้อยละ 3',focal:'HRD',report:'รายงาน HRD',haLink:'h1-5-2',values:emptyVals()},
+  ]},
+  {id:'p8',no:8,name:'การส่งเสริมสุขภาพและความผาสุกของบุคลากร',indicators:[
+    {id:'y3p8i1',no:'1',name:'ร้อยละบุคลากรผ่านการประเมินสุขภาพประจำปี',target:'>ร้อยละ 90',focal:'HRD',report:'รายงาน',haLink:null,values:emptyVals()},
+    {id:'y3p8i2',no:'2',name:'ร้อยละบุคลากรมีคะแนนความผาสุก (Well-being) อยู่ในเกณฑ์ดี',target:'>ร้อยละ 80',focal:'HRD',report:'แบบสอบถาม',haLink:null,values:emptyVals()},
+  ]},
+]},
+
+/* ══ ยุทธศาสตร์ที่ 4: Governance Excellence ══ */
+{id:'y4',no:4,short:'Governance Excellence',
+ name:'ด้านการบริหารจัดการเป็นเลิศด้วยธรรมาภิบาล (Governance Excellence)',
+ color:'#fbbf24',plans:[
+  {id:'p9',no:9,name:'ธรรมาภิบาล ความโปร่งใส และการมีส่วนร่วม',indicators:[
+    {id:'y4p9i1',no:'1',name:'อัตราผ่านการประเมินคุณธรรมและความโปร่งใสในการดำเนินงานของหน่วยงานภาครัฐ (ITA)',target:'>ร้อยละ 90',focal:'บริหาร/น้ำหวาน',report:'ITA Online',haLink:'h1-1-4',values:emptyVals()},
+    {id:'y4p9i2',no:'2',name:'ร้อยละของตัวชี้วัดยุทธศาสตร์ที่ผ่านเป้าหมาย',target:'>ร้อยละ 80',focal:'เลขาคณะกรรมการ',report:'รายงาน',haLink:'h1-2-1',values:emptyVals()},
+    {id:'y4p9i3',no:'3',name:'จำนวนโครงการที่ดำเนินการได้ตามแผนยุทธศาสตร์',target:'≥ ร้อยละ 80',focal:'เลขาฯ',report:'รายงาน',haLink:'h1-2-2',values:emptyVals()},
+  ]},
+  {id:'p10',no:10,name:'การพัฒนาระบบข้อมูล IT และเทคโนโลยีสารสนเทศ',indicators:[
+    {id:'y4p10i1',no:'1',name:'ร้อยละความครบถ้วนของการบันทึกข้อมูลผู้ป่วย HIS',target:'>ร้อยละ 95',focal:'IT',report:'HIS',haLink:'h1-4-1',values:emptyVals()},
+    {id:'y4p10i2',no:'2',name:'อัตราความพร้อมใช้งานของระบบ HIS (Uptime)',target:'>ร้อยละ 99',focal:'IT',report:'Server Log',haLink:null,values:emptyVals()},
+    {id:'y4p10i3',no:'3',name:'จำนวน Dashboard KPI ที่พัฒนาและใช้งาน',target:'>5 Dashboard',focal:'IT',report:'รายงาน IT',haLink:null,values:emptyVals()},
+  ]},
+]},
+
+/* ══ ยุทธศาสตร์ที่ 5: Finance & Digital ══ */
+{id:'y5',no:5,short:'Finance & Digital',
+ name:'ด้านการเงินการคลังที่ยั่งยืนและระบบสุขภาพดิจิทัล (Finance & Digital Health Excellence)',
+ color:'#f87171',plans:[
+  {id:'p11',no:11,name:'การบริหารการเงินการคลังให้มั่นคงและยั่งยืน',indicators:[
+    {id:'y5p11i1',no:'1',name:'การกำกับด้านการเงินตามเกณฑ์วิกฤต 7 ระดับ',target:'<ระดับ 3',focal:'การเงิน (พี่อ๋อย)',report:'CFO',haLink:'h1-1-3',values:emptyVals()},
+    {id:'y5p11i2',no:'2',name:'อัตราส่วนรายได้ต่อรายจ่าย',target:'>1',focal:'การเงิน',report:'CFO',haLink:'h4-3-1',values:emptyVals()},
+    {id:'y5p11i3',no:'3',name:'มูลค่าสินทรัพย์สุทธิ (ล้านบาท)',target:'เพิ่มขึ้น',focal:'การเงิน',report:'CFO',haLink:null,values:emptyVals()},
+    {id:'y5p11i4',no:'4',name:'ผลการประเมิน HA ระดับ สรพ.',target:'ผ่านการรับรอง',focal:'QMR',report:'สรพ.',haLink:'h4-2-1',values:emptyVals()},
+  ]},
+  {id:'p12',no:12,name:'การพัฒนาระบบสุขภาพดิจิทัลและนวัตกรรม',indicators:[
+    {id:'y5p12i1',no:'1',name:'ร้อยละความครอบคลุมการเชื่อมโยงข้อมูลสุขภาพผ่านระบบ HDC',target:'>ร้อยละ 90',focal:'IT',report:'HDC',haLink:null,values:emptyVals()},
+    {id:'y5p12i2',no:'2',name:'จำนวนนวัตกรรม/งานวิจัยที่ได้รับการยอมรับ/นำไปใช้',target:'>2 เรื่อง/ปี',focal:'QMR',report:'รายงาน',haLink:null,values:emptyVals()},
+    {id:'y5p12i3',no:'3',name:'จำนวนเครือข่ายสุขภาพที่เชื่อมโยงข้อมูลดิจิทัล',target:'>10 แห่ง',focal:'IT',report:'รายงาน IT',haLink:null,values:emptyVals()},
+  ]},
+]},
+];}
+
+/* ═════════ HA DATA ═════════ */
+function p1Def(){return{sections:[
+  {id:'1-1',name:'1-1 การนำองค์กร',responsible:'HRD / บริหาร',indicators:[
+    {id:'h1-1-1',no:'1',name:'อัตราความผูกพันของบุคลากรต่อองค์กร',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'HRD',linkStrat:'y3p7i1',values:emptyVals()},
+    {id:'h1-1-2',no:'2',name:'ร้อยละผู้เข้าร่วมประชุมผู้นำพบเจ้าหน้าที่ (Town Hall meeting)',target:'≥ ร้อยละ 50',unit:'ร้อยละ',responsible:'HRD',linkStrat:'y3p7i3',values:emptyVals()},
+    {id:'h1-1-3',no:'3',name:'การกำกับด้านการเงินตามเกณฑ์วิกฤต 7 ระดับ',target:'< ระดับ 3',unit:'ระดับ',responsible:'การเงิน (พี่อ๋อย)',linkStrat:'y5p11i1',values:emptyVals()},
+    {id:'h1-1-4',no:'4',name:'อัตราผ่านการประเมินคุณธรรมและความโปร่งใสในการดำเนินงานของหน่วยงานภาครัฐ (ITA)',target:'> ร้อยละ 90',unit:'ร้อยละ',responsible:'บริหาร/น้ำหวาน',linkStrat:'y4p9i1',values:emptyVals()},
+    {id:'h1-1-5',no:'5',name:'ผลการวิเคราะห์คุณภาพน้ำเสียที่ผ่านการบำบัด (13 Parameters)',target:'ผ่านเกณฑ์',unit:'-',responsible:'สมจิตร',linkStrat:'y1p3i10',values:emptyVals()},
+    {id:'h1-1-6',no:'6',name:'ข้อร้องเรียนของชุมชนเกี่ยวกับขยะติดเชื้อ/น้ำเสีย',target:'0 เรื่อง',unit:'เรื่อง',responsible:'สมจิตร',linkStrat:'y1p3i11',values:emptyVals()},
+  ]},
+  {id:'1-2',name:'1-2 กลยุทธ์',responsible:'เลขาคณะกรรมการ',indicators:[
+    {id:'h1-2-1',no:'1',name:'ร้อยละของตัวชี้วัดยุทธศาสตร์ที่ผ่านเป้าหมาย',target:'> ร้อยละ 80',unit:'ร้อยละ',responsible:'เลขาฯ',linkStrat:'y4p9i2',values:emptyVals()},
+    {id:'h1-2-2',no:'2',name:'จำนวนโครงการที่ดำเนินการได้ตามแผนยุทธศาสตร์',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'เลขาฯ',linkStrat:'y4p9i3',values:emptyVals()},
+  ]},
+  {id:'1-3',name:'1-3 ผู้ป่วย/ผู้รับผลงาน',responsible:'PCT / OPD',indicators:[
+    {id:'h1-3-1',no:'1',name:'ร้อยละความพึงพอใจผู้รับบริการ OPD',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'OPD',linkStrat:'y2p4i1',values:emptyVals()},
+    {id:'h1-3-2',no:'2',name:'ร้อยละความพึงพอใจผู้รับบริการ IPD',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'IPD',linkStrat:'y2p4i2',values:emptyVals()},
+  ]},
+  {id:'1-4',name:'1-4 การวัด/วิเคราะห์/KM',responsible:'IT / QMR',indicators:[
+    {id:'h1-4-1',no:'1',name:'ร้อยละความครบถ้วนของการบันทึกข้อมูล HIS',target:'≥ ร้อยละ 95',unit:'ร้อยละ',responsible:'IT',linkStrat:'y4p10i1',values:emptyVals()},
+  ]},
+  {id:'1-5',name:'1-5 บุคลากร',responsible:'HRD',indicators:[
+    {id:'h1-5-1',no:'1',name:'ร้อยละบุคลากรได้รับการพัฒนาตามแผน',target:'≥ ร้อยละ 90',unit:'ร้อยละ',responsible:'HRD',linkStrat:'y3p7i2',values:emptyVals()},
+    {id:'h1-5-2',no:'2',name:'อัตราการลาป่วยของบุคลากร',target:'< ร้อยละ 3',unit:'ร้อยละ',responsible:'HRD',linkStrat:'y3p7i4',values:emptyVals()},
+  ]},
+  {id:'1-6',name:'1-6 การปฏิบัติการ',responsible:'RM / QMR',indicators:[
+    {id:'h1-6-1',no:'1',name:'ร้อยละโครงการ/กิจกรรมที่ดำเนินการตามแผน',target:'≥ ร้อยละ 80',unit:'ร้อยละ',responsible:'QMR',linkStrat:null,values:emptyVals()},
+  ]},
+]};}
+
+function p2Def(){return{sections:[
+  {id:'RM',name:'RM บริหารความเสี่ยง',responsible:'ติงลี่',indicators:[
+    {id:'h2-rm-1',no:'1',name:'จำนวนการรายงานอุบัติการณ์',target:'เพิ่มขึ้น',unit:'ครั้ง',responsible:'ติงลี่',linkStrat:null,values:emptyVals()},
+    {id:'h2-rm-2',no:'2',name:'สัดส่วนเหตุการณ์ Near Miss (A-B) / Miss (C ขึ้นไป)',target:'เพิ่มขึ้น',unit:'สัดส่วน',responsible:'ติงลี่',linkStrat:null,values:emptyVals()},
+    {id:'h2-rm-3',no:'3',name:'อัตราการรายงานอุบัติการณ์ระดับ A–B',target:'> ร้อยละ 80',unit:'ร้อยละ',responsible:'ติงลี่',linkStrat:null,values:emptyVals()},
+    {id:'h2-rm-4',no:'4',name:'อัตราการทบทวนแก้ไขอุบัติการณ์ ระดับ A–D ในโปรแกรม NRLS',target:'> ร้อยละ 80',unit:'ร้อยละ',responsible:'ติงลี่',linkStrat:null,values:emptyVals()},
+    {id:'h2-rm-5',no:'5',name:'อัตราการทบทวนบริการด้าน Non clinic ระดับ 1-3',target:'ร้อยละ 100',unit:'ร้อยละ',responsible:'ติงลี่',linkStrat:null,values:emptyVals()},
+    {id:'h2-rm-6',no:'6',name:'อัตราการทบทวนอุบัติการณ์ ระดับ E–I และอุบัติการณ์ระดับ 4-5',target:'ร้อยละ 100',unit:'ร้อยละ',responsible:'ติงลี่',linkStrat:null,values:emptyVals()},
+    {id:'h2-rm-7',no:'7',name:'จำนวนอุบัติการณ์ E–I ที่เกิดซ้ำจากสาเหตุเดิม/ใหม่',target:'0 ครั้ง',unit:'ครั้ง',responsible:'ติงลี่',linkStrat:null,values:emptyVals()},
+    {id:'h2-rm-8',no:'8',name:'จำนวนข้อร้องเรียน social media ที่ส่งผลต่อภาพลักษณ์องค์กร (ระดับ 3 ขึ้นไป)',target:'0 เรื่อง',unit:'เรื่อง',responsible:'ติงลี่',linkStrat:null,values:emptyVals()},
+  ]},
+  {id:'NSO',name:'NSO การพยาบาล',responsible:'หัวหน้าพยาบาล',indicators:[
+    {id:'h2-nso-1',no:'1',name:'อัตราการเกิด Pressure Injury ระดับ 2 ขึ้นไป',target:'< 1 ต่อ 1,000 วันนอน',unit:'ต่อ 1,000 วัน',responsible:'NSO',linkStrat:null,values:emptyVals()},
+    {id:'h2-nso-2',no:'2',name:'อัตราการผูกยึดร่างกายผู้ป่วย',target:'ลดลง',unit:'ร้อยละ',responsible:'NSO',linkStrat:null,values:emptyVals()},
+  ]},
+  {id:'MSO',name:'MSO บริการทางการแพทย์',responsible:'แพทย์ / QMR',indicators:[
+    {id:'h2-mso-1',no:'1',name:'อัตราผู้ป่วยกลับมา Readmit ภายใน 28 วัน ด้วยโรคเดิม',target:'< ร้อยละ 5',unit:'ร้อยละ',responsible:'แพทย์',linkStrat:'y2p5i3',values:emptyVals()},
+  ]},
+  {id:'ENV',name:'ENV สิ่งแวดล้อม',responsible:'สมจิตร',indicators:[
+    {id:'h2-env-1',no:'1',name:'ผลการวิเคราะห์คุณภาพน้ำเสียที่ผ่านการบำบัด (13 Parameters)',target:'ผ่านเกณฑ์',unit:'-',responsible:'สมจิตร',linkStrat:'y1p3i9',values:emptyVals()},
+  ]},
+  {id:'IC',name:'IC การป้องกันการติดเชื้อ',responsible:'IC Nurse',indicators:[
+    {id:'h2-ic-1',no:'1',name:'อัตราการติดเชื้อ BSI ผู้ป่วย ICU (BSI rate)',target:'< 1 ต่อ 1,000 ventilator days',unit:'ต่อ 1,000',responsible:'IC',linkStrat:null,values:emptyVals()},
+    {id:'h2-ic-2',no:'2',name:'อัตราการปฏิบัติตาม Hand Hygiene (5 Moments)',target:'> ร้อยละ 90',unit:'ร้อยละ',responsible:'IC',linkStrat:null,values:emptyVals()},
+  ]},
+  {id:'IM',name:'IM เวชระเบียน',responsible:'IM',indicators:[
+    {id:'h2-im-1',no:'1',name:'ร้อยละความครบถ้วนของการบันทึกเวชระเบียนผู้ป่วยใน',target:'> ร้อยละ 90',unit:'ร้อยละ',responsible:'IM',linkStrat:null,values:emptyVals()},
+  ]},
+  {id:'PTC',name:'PTC เภสัชกรรม',responsible:'เภสัชกร',indicators:[
+    {id:'h2-ptc-1',no:'1',name:'อัตรา Medication Error ระดับ C ขึ้นไป',target:'< 0.01 ต่อ 1,000 วันนอน',unit:'ต่อ 1,000',responsible:'เภสัชกร',linkStrat:null,values:emptyVals()},
+  ]},
+  {id:'LAB',name:'LAB+X-ray ห้องปฏิบัติการ',responsible:'LAB',indicators:[
+    {id:'h2-lab-1',no:'1',name:'ร้อยละผลการทดสอบ proficiency testing ผ่านเกณฑ์',target:'> ร้อยละ 80',unit:'ร้อยละ',responsible:'LAB',linkStrat:null,values:emptyVals()},
+  ]},
+  {id:'EPI',name:'เฝ้าระวังโรค',responsible:'งานระบาดวิทยา',indicators:[
+    {id:'h2-epi-1',no:'1',name:'อัตราป่วยโรคไข้เลือดออก (ต่อ 100,000 ประชากร)',target:'< 50 ต่อ 100,000',unit:'ต่อ 100,000',responsible:'ระบาด',linkStrat:null,values:emptyVals()},
+  ]},
+  {id:'COM',name:'การทำงานกับชุมชน',responsible:'ชุมชน/อสม.',indicators:[
+    {id:'h2-com-1',no:'1',name:'จำนวน อสม. ที่ผ่านการอบรมเชิงปฏิบัติการ',target:'> 200 คน',unit:'คน',responsible:'ชุมชน',linkStrat:null,values:emptyVals()},
+  ]},
+]};}
+
+function p4Def(){return{sections:[
+  {id:'4-1',name:'4-1 ผลลัพธ์ด้านความปลอดภัย',responsible:'RM',indicators:[
+    {id:'h4-1-1',no:'1',name:'อัตราตายมารดา (ต่อ 100,000 การคลอดมีชีพ)',target:'< 1',unit:'ต่อ 100,000',responsible:'OB',linkStrat:'y1p1i1',values:emptyVals()},
+    {id:'h4-1-2',no:'2',name:'อัตราทารกแรกเกิดน้ำหนักน้อยกว่า 2,500 กรัม',target:'< ร้อยละ 7',unit:'ร้อยละ',responsible:'OB',linkStrat:null,values:emptyVals()},
+  ]},
+  {id:'4-2',name:'4-2 ผลลัพธ์ด้านคุณภาพบริการ',responsible:'QMR',indicators:[
+    {id:'h4-2-1',no:'1',name:'ผลการประเมิน HA ระดับ สรพ.',target:'ผ่านการรับรอง',unit:'-',responsible:'QMR',linkStrat:'y5p11i4',values:emptyVals()},
+    {id:'h4-2-2',no:'2',name:'อัตราผู้ป่วยเบาหวานควบคุมระดับน้ำตาลได้ (HbA1c < 7)',target:'> ร้อยละ 40',unit:'ร้อยละ',responsible:'DM Nurse',linkStrat:'y2p4i3',values:emptyVals()},
+    {id:'h4-2-3',no:'3',name:'อัตราผู้ป่วยความดันโลหิตสูงควบคุมได้ (BP < 140/90)',target:'> ร้อยละ 50',unit:'ร้อยละ',responsible:'HT Nurse',linkStrat:'y2p4i4',values:emptyVals()},
+  ]},
+  {id:'4-3',name:'4-3 ผลลัพธ์ด้านประสิทธิภาพ',responsible:'การเงิน',indicators:[
+    {id:'h4-3-1',no:'1',name:'อัตราส่วนรายได้ต่อรายจ่าย',target:'> 1',unit:'อัตราส่วน',responsible:'การเงิน',linkStrat:'y5p11i2',values:emptyVals()},
+    {id:'h4-3-2',no:'2',name:'อัตราการส่งต่อผู้ป่วยฉุกเฉินภายใน 30 นาที',target:'> ร้อยละ 90',unit:'ร้อยละ',responsible:'ER',linkStrat:'y2p5i1',values:emptyVals()},
+  ]},
+]};}
+
+/* ===== BOOT ===== */
+wLog('เปิดระบบ Dashboard', '', 'info');
+initVer();
+
+// Restore GS URL if saved
+const _gsUrl = localStorage.getItem(GS_URL_KEY) || '';
+if (_gsUrl) {
+  GS_URL = _gsUrl;
+  const _gsF = el('setGSUrl');
+  if (_gsF) _gsF.value = _gsUrl;
+  setTimeout(async () => {
+    const ok = await gsPing();
+    if (!ok) setSyncStatus('error', 'GS ไม่ตอบสนอง');
+  }, 2500);
+} else {
+  setSyncStatus('local');
+}
+
+renderAll();
+</script>
+</body>
+</html>
